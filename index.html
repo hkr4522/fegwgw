@@ -329,10 +329,12 @@
             // Initial loader
             container.innerHTML = getSkeletonHTML();
             
-            const [trendingAll, movies, tv] = await Promise.all([
+            const [trendingAll, movies, tv, indian, anime] = await Promise.all([
                 fetchAPI('/trending/all/day'),
                 fetchAPI('/trending/movie/day'),
-                fetchAPI('/trending/tv/day')
+                fetchAPI('/trending/tv/day'),
+                fetchAPI('/discover/movie?with_original_language=hi&sort_by=popularity.desc'),
+                fetchAPI('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc')
             ]);
 
             if (!trendingAll) {
@@ -394,6 +396,32 @@
                         </div>
                         <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
                             ${buildMediaCards(tv.results, 'tv')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (indian && indian.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Top Indian Movies</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(indian.results, 'movie')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (anime && anime.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Popular Anime & Cartoons</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(anime.results, 'tv')}
                         </div>
                     </section>
                 `;
