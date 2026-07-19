@@ -462,11 +462,12 @@
             // Initial loader
             container.innerHTML = getSkeletonHTML();
 
-            const [trendingAll, movies, tv, indian, topMovies, topTv, latestMovies, latestTv, actionAdv, romance, kdrama, blockbusters, cartoonTv, cartoonMovie, netflix, disney] = await Promise.all([
+            const [trendingAll, movies, tv, indian, anime, topMovies, topTv, latestMovies, latestTv, actionAdv, romance, kdrama, blockbusters, cartoonTv, cartoonMovie, netflix, disney] = await Promise.all([
                 fetchAPI('/trending/all/day'),
                 fetchAPI('/trending/movie/day'),
                 fetchAPI('/trending/tv/day'),
                 fetchAPI('/discover/movie?with_original_language=hi'),
+                fetchAPI('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc'),
                 fetchAPI('/movie/top_rated'),
                 fetchAPI('/tv/top_rated'),
                 fetchAPI('/movie/now_playing'),
