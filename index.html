@@ -146,7 +146,7 @@
                             <div class="hide-scrollbar flex overflow-x-auto items-center gap-2 md:gap-4 md:w-full md:justify-start cursor-grab active:cursor-grabbing select-none" id="topNav">
                                 <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/" data-nav="top-home">Home</a>
                                 <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/movies" data-nav="top-movies">Movies</a>
-                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/tv" data-nav="top-tv">TV Shows</a>
+                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/tv-shows" data-nav="top-tv">TV Shows</a>
                                 <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/anime" data-nav="top-anime">Anime</a>
                             </div>
                         </div>
@@ -193,9 +193,9 @@
             
             if (hash.startsWith('/search')) currentNav = 'search';
             if (hash === '/movies') topNavActive = 'top-movies';
-            else if (hash === '/tv') topNavActive = 'top-tv';
+            else if (hash === '/tv-shows') topNavActive = 'top-tv';
             else if (hash === '/anime') topNavActive = 'top-anime';
-            else if (hash.startsWith('/movie/') || hash.startsWith('/tv/')) {
+            else if (hash.startsWith('/movie/') || hash.startsWith('/tv/') || hash.startsWith('/watch/')) {
                 topNavActive = ''; 
             }
 
@@ -227,7 +227,7 @@
 
             // Show/Hide top nav container
             const topNavContainer = document.getElementById('topNavContainer');
-            if(hash === '/' || hash === '' || hash === '/movies' || hash === '/tv' || hash === '/anime') {
+            if(hash === '/' || hash === '' || hash === '/movies' || hash === '/tv-shows' || hash === '/anime') {
                 topNavContainer.style.display = 'block';
             } else {
                 topNavContainer.style.display = 'none';
@@ -477,7 +477,7 @@
             if (type === 'movies') {
                 endpoint = '/discover/movie?sort_by=popularity.desc';
                 title = 'Popular Movies';
-            } else if (type === 'tv') {
+            } else if (type === 'tv-shows') {
                 endpoint = '/discover/tv?sort_by=popularity.desc';
                 title = 'Popular TV Shows';
             } else if (type === 'anime') {
@@ -519,9 +519,8 @@
             `;
         }
 
-        async function renderPlayer(container, type, id) {
+        async function renderDetails(container, type, id) {
             container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
-            
             const details = await fetchAPI(`/${type}/${id}`);
             
             if (!details) {
@@ -533,53 +532,92 @@
             const year = new Date(details.release_date || details.first_air_date).getFullYear() || '';
             const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]) ? `${details.runtime || details.episode_run_time[0]} min` : '';
             
-            let html = `<div class="max-w-[1400px] mx-auto pb-20">`;
-            
-            // Adjust container margin if we are rendering a backdrop hero
             container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
 
-            if (details.backdrop_path) {
-                html += `
-                    <div class="relative overflow-hidden bg-[#0b0b0b] min-h-[50vh] flex flex-col justify-end">
-                        <div class="absolute inset-0">
-                            <img src="${IMAGE_BASE_ORIGINAL}${details.backdrop_path}" alt="${title}" class="w-full h-full object-cover opacity-30" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+            let html = `
+                <div class="relative flex w-full flex-col justify-end overflow-hidden min-h-[550px] h-[70vh] md:h-[85vh] md:min-h-[640px]">
+                    <div class="absolute inset-0" style="mask-image:linear-gradient(to bottom, black 50%, transparent 100%);-webkit-mask-image:linear-gradient(to bottom, black 50%, transparent 100%)">
+                        ${details.backdrop_path ? `<img src="${IMAGE_BASE_ORIGINAL}${details.backdrop_path}" alt="${title}" class="absolute inset-0 w-full h-full object-cover object-top md:object-center"/>` : ''}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/30 md:to-black/40"></div>
+                    </div>
+                    
+                    <div class="relative z-10 flex flex-col px-4 pb-12 md:px-6 md:pb-16 justify-end items-center text-center h-full mt-auto">
+                        <div class="absolute top-5 left-4 right-4 md:left-6 md:right-6 flex items-center justify-between gap-3">
+                            <a href="#/" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur text-white transition hover:bg-white/10">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                            </a>
                         </div>
-                        <div class="relative z-10 px-4 md:px-12 pb-16 pt-32 md:pt-40">
-                            <div class="max-w-5xl">
-                                <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-4">${title}</h1>
-                                <div class="flex flex-wrap items-center gap-3 mb-6">
-                                    ${year ? `<span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold">${year}</span>` : ''}
-                                    ${runtime ? `<span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold">${runtime}</span>` : ''}
-                                    <span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-yellow flex items-center gap-1">⭐ ${details.vote_average.toFixed(1)}</span>
-                                </div>
-                                <p class="text-base md:text-lg text-gray-300 leading-relaxed max-w-3xl mb-6">${details.overview}</p>
-                                ${details.genres ? `
-                                <div class="flex flex-wrap gap-2">
-                                    ${details.genres.map(g => `<span class="px-3 py-1 border border-white/20 rounded-full text-xs text-gray-300">${g.name}</span>`).join('')}
-                                </div>` : ''}
+                        <div class="max-w-3xl flex flex-col items-center">
+                            <h1 class="mb-4 text-4xl font-bold font-display md:text-6xl text-shadow-lg">${title}</h1>
+                            <div class="mb-4 flex flex-wrap justify-center gap-2">
+                                <span class="rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-yellow">${type === 'movie' ? 'Movie' : 'TV Show'}</span>
+                                <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="#FFC300" stroke="#FFC300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${details.vote_average.toFixed(1)}</span>
+                                ${year ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${year}</span>` : ''}
+                                ${runtime ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${runtime}</span>` : ''}
                             </div>
+                            <div>
+                                <p class="text-gray-300 text-sm md:text-base leading-relaxed max-w-2xl">${details.overview}</p>
+                            </div>
+                            <div class="mt-8 flex flex-wrap justify-center w-full border-b border-transparent gap-4">
+                                <a class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-yellow text-black rounded-full transition-transform hover:scale-105 md:w-auto shadow-[0_0_20px_rgba(234,179,8,0.4)]" href="#/watch/${type}/${id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch Now
+                                </a>
+                            </div>
+                            ${details.genres ? `
+                            <div class="mt-6 flex flex-wrap justify-center gap-2">
+                                ${details.genres.map(g => `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-sm text-gray-300">${g.name}</span>`).join('')}
+                            </div>` : ''}
                         </div>
                     </div>
-                `;
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        async function renderPlayer(container, type, id) {
+            container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
+            const details = await fetchAPI(`/${type}/${id}`);
+            
+            if (!details) {
+                container.innerHTML = '<div class="text-center py-20">Failed to load details.</div>';
+                return;
             }
 
-            html += `
-                <div class="px-4 md:px-12 ${details.backdrop_path ? '-mt-8' : 'mt-8'} relative z-20">
-                    <div class="w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black">
-                        <iframe id="videoPlayer" src="" class="w-full h-full border-none" allowfullscreen></iframe>
+            const title = details.title || details.name;
+            container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
+
+            let html = `
+                <div class="relative min-h-screen bg-[#050505] text-white">
+                    <div class="fixed inset-0 pointer-events-none -z-10">
+                        ${details.backdrop_path ? `<div class="absolute inset-0 opacity-30 blur-[100px] saturate-150" style="background-image:url(${IMAGE_BASE_ORIGINAL}${details.backdrop_path});background-size:cover;background-position:center"></div>` : ''}
+                        <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/60 via-[#050505] to-[#050505]"></div>
                     </div>
+                    <div class="relative z-10 w-full mx-auto pt-4 sm:pt-6 lg:pt-12 max-w-7xl">
+                        <div class="px-4 sm:px-6 flex items-center justify-between mb-4 sm:mb-6">
+                            <div class="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md">
+                                <a class="hover:text-white transition-colors" href="#/">Home</a>
+                                <span class="opacity-40">•</span>
+                                <span class="hover:text-white transition-colors">${type}</span>
+                                <span class="opacity-40">•</span>
+                                <span class="text-white max-w-[120px] sm:max-w-[200px] md:max-w-xs truncate">${title}</span>
+                            </div>
+                            <a href="#/${type}/${id}" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5 hover:border-white/10 hover:scale-105 active:scale-95" aria-label="Go back">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                            </a>
+                        </div>
+                        <section class="w-full sm:px-6 relative z-20">
+                            <div class="relative w-full aspect-video overflow-hidden bg-black sm:rounded-2xl sm:ring-1 sm:ring-white/10 pointer-events-auto shadow-2xl">
+                                <iframe id="videoPlayer" src="" class="absolute inset-0 w-full h-full border-0 pointer-events-auto" allowfullscreen></iframe>
+                            </div>
             `;
 
             if (type === 'tv') {
                 html += `
-                    <div class="mt-6 flex flex-wrap gap-4 bg-[#11131a] p-4 md:p-6 rounded-2xl border border-white/5">
+                    <div class="mt-4 sm:mt-6 flex flex-wrap gap-4 mx-4 sm:mx-0">
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Season</label>
                             <select id="seasonSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
                         </div>
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Episode</label>
                             <select id="episodeSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
                         </div>
                     </div>
@@ -587,9 +625,10 @@
             }
 
             html += `
+                        </section>
+                    </div>
                 </div>
-            </div>`;
-
+            `;
             container.innerHTML = html;
 
             const player = document.getElementById('videoPlayer');
@@ -599,7 +638,6 @@
             } else if (type === 'tv') {
                 const seasonSelect = document.getElementById('seasonSelect');
                 const episodeSelect = document.getElementById('episodeSelect');
-                
                 const validSeasons = details.seasons.filter(s => s.season_number > 0);
                 
                 validSeasons.forEach(s => {
@@ -613,7 +651,6 @@
                     const sNum = seasonSelect.value;
                     episodeSelect.innerHTML = '<option>Loading...</option>';
                     const sData = await fetchAPI(`/tv/${id}/season/${sNum}`);
-                    
                     episodeSelect.innerHTML = '';
                     if (sData && sData.episodes) {
                         sData.episodes.forEach(e => {
@@ -649,7 +686,7 @@
             const hash = window.location.hash.slice(1) || '/';
             const app = document.getElementById('app');
             
-            // Reset container classes (Player removes them)
+            // Reset container classes (Player and Details remove them)
             app.className = "pt-32 md:pt-20 px-4 md:px-6";
             
             updateNavState(hash);
@@ -661,16 +698,22 @@
                 renderSearch(app);
             } else if (hash === '/movies') {
                 renderList(app, 'movies');
-            } else if (hash === '/tv') {
-                renderList(app, 'tv');
+            } else if (hash === '/tv-shows') {
+                renderList(app, 'tv-shows');
             } else if (hash === '/anime') {
                 renderList(app, 'anime');
+            } else if (hash.startsWith('/watch/movie/')) {
+                const id = hash.split('/')[3];
+                if (id) renderPlayer(app, 'movie', id);
+            } else if (hash.startsWith('/watch/tv/')) {
+                const id = hash.split('/')[3];
+                if (id) renderPlayer(app, 'tv', id);
             } else if (hash.startsWith('/movie/')) {
                 const id = hash.split('/')[2];
-                if (id) renderPlayer(app, 'movie', id);
+                if (id) renderDetails(app, 'movie', id);
             } else if (hash.startsWith('/tv/')) {
                 const id = hash.split('/')[2];
-                if (id) renderPlayer(app, 'tv', id);
+                if (id) renderDetails(app, 'tv', id);
             } else {
                 app.innerHTML = '<div class="text-center py-32 text-2xl font-bold text-gray-500">Page Not Found</div>';
             }
