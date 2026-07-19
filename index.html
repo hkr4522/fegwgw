@@ -3,574 +3,55 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Nxsha - Watch Movies & TV Shows</title>
+    <title>Cinepeace - Watch Movies, TV Shows & Anime Free</title>
     <meta name="theme-color" content="#000000">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        body: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        yellow: '#EAB308',
+                        black: '#000000',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
-        :root {
-            --yellow: #EAB308;
-            --bg-black: #000000;
-            --bg-dark: #0b0b0b;
-            --bg-card: #11131a;
-            --bg-card-hover: #1b1f2a;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-gray: #9ca3af;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-black);
-            color: #ffffff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* Responsive Display Classes */
+        /* Custom overrides */
+        body { font-family: 'Outfit', sans-serif; }
         .desktop-only { display: none; }
         .mobile-only { display: flex; }
-
         @media (min-width: 768px) {
             .desktop-only { display: flex; }
             .mobile-only { display: none; }
-            .main-content {
-                margin-left: 78px;
-                padding-bottom: 2rem;
-            }
-        }
-
-        @media (max-width: 767px) {
-            .main-content {
-                padding-bottom: 90px;
-                padding-top: 10px;
-            }
-        }
-
-        /* ----- Sidebar (Desktop) ----- */
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            z-index: 50;
-            width: 78px;
-            flex-direction: column;
-            align-items: center;
-            background-color: transparent;
-            padding: 1.5rem 0;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .logo-container {
-            margin-bottom: auto;
-            padding-top: 0.5rem;
-        }
-        .logo-container h2 {
-            color: var(--yellow);
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            width: 100%;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1.75rem;
-        }
-
-        .sidebar-link {
-            position: relative;
-            display: flex;
-            height: 48px;
-            width: 48px;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            transition: all 0.2s;
-            border-radius: 12px;
-        }
-
-        .sidebar-link:hover {
-            color: #ffffff;
-        }
-
-        .sidebar-link.active {
-            color: var(--yellow);
+            .content-with-sidebar { margin-left: 78px; }
         }
         
-        .sidebar-link.active svg {
-            filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.5));
-        }
-
-        .sidebar-link.active .active-indicator {
-            position: absolute;
-            left: -15px;
-            height: 24px;
-            width: 4px;
-            border-radius: 0 9999px 9999px 0;
-            background-color: var(--yellow);
-            display: block;
-        }
-
-        .active-indicator {
-            display: none;
-        }
-
-        .tooltip {
-            position: absolute;
-            left: 56px;
-            white-space: nowrap;
-            border-radius: 6px;
-            background-color: #1a1a1a;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            color: #ffffff;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 60;
-        }
-
-        .sidebar-link:hover .tooltip {
-            opacity: 1;
-        }
-
-        /* ----- Bottom Nav (Mobile) ----- */
-        .bottom-nav {
-            position: fixed;
-            bottom: 8px;
-            left: 12px;
-            right: 12px;
-            z-index: 50;
-            align-items: center;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: rgba(0, 0, 0, 0.75);
-            padding: 6px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .bottom-link {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            border-radius: 0.75rem;
-            padding: 8px 0;
-            color: #6b7280;
-            transition: all 0.2s;
-        }
-
-        .bottom-link span {
-            font-size: 10px;
-            font-weight: 500;
-        }
-
-        .bottom-link.active {
-            background-color: var(--yellow);
-            color: #000000;
-            box-shadow: 0 4px 14px 0 rgba(234, 179, 8, 0.39);
-        }
-
-        /* ----- Top Navigation Pills ----- */
-        .top-nav {
-            display: flex;
-            overflow-x: auto;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 24px;
-            scrollbar-width: none; /* Firefox */
-        }
-        .top-nav::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
-
-        .nav-pill {
-            min-width: 80px;
-            flex-shrink: 0;
-            border-radius: 9999px;
-            border: 1px solid var(--border-color);
-            background-color: rgba(17, 19, 26, 0.9);
-            padding: 6px 16px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
+        /* Hide scrollbars but allow scroll */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .nav-pill:hover {
-            background-color: var(--bg-card-hover);
+        /* Loading skeleton animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .skeleton {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .nav-pill.active {
-            background-color: var(--yellow);
-            border-color: var(--yellow);
-            color: #000000;
-            box-shadow: 0 4px 14px 0 rgba(234, 179, 8, 0.2);
-        }
-
-        /* ----- Main Content Container ----- */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* ----- Hero Section ----- */
-        .hero {
-            position: relative;
-            overflow: hidden;
-            border-radius: 2rem;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-dark);
-            min-height: 42vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 2rem;
-            margin-top: 1rem;
-        }
-
-        @media (min-width: 768px) {
-            .hero {
-                min-height: 58vh;
-                padding: 4rem;
-            }
-        }
-
-        .hero-bg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.5;
-            mask-image: linear-gradient(to top, transparent, black 80%);
-            -webkit-mask-image: linear-gradient(to top, transparent, black 80%);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .hero-title {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1rem;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .hero-meta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 1rem;
-        }
-        
-        .hero-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .hero-overview {
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 2rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.5;
-        }
-
-        .btn-play {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 32px;
-            background-color: var(--yellow);
-            color: #000;
-            font-weight: 700;
-            border-radius: 9999px;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-play:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
-        }
-
-        /* ----- Media Rows (Horizontal Scroll) ----- */
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .media-row {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding-bottom: 1.5rem;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .media-row::-webkit-scrollbar {
-            display: none;
-        }
-
-        .media-card {
-            flex: 0 0 146px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: transform 0.2s;
-        }
-
-        @media (min-width: 768px) {
-            .media-card {
-                flex: 0 0 180px;
-            }
-        }
-
-        .media-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .media-poster-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 2/3;
-            border-radius: 1rem;
-            overflow: hidden;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-        }
-
-        .media-poster {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s;
-        }
-
-        .media-card:hover .media-poster {
-            transform: scale(1.05);
-        }
-
-        .media-rating {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .media-rating svg { color: var(--yellow); }
-
-        .media-title {
-            font-size: 0.95rem;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .media-year {
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        /* ----- Search Page ----- */
-        .search-header {
-            margin-top: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .search-input-wrapper {
-            position: relative;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 16px 24px 16px 48px;
-            border-radius: 9999px;
-            background-color: #11131a;
-            border: 1px solid var(--border-color);
-            color: white;
-            font-size: 1.1rem;
-            outline: none;
-            transition: border-color 0.2s;
-            font-family: inherit;
-        }
-
-        .search-input:focus {
-            border-color: var(--yellow);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-gray);
-        }
-
-        .search-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 16px;
-        }
-        
-        @media (min-width: 768px) {
-            .search-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 24px;
-            }
-        }
-
-        /* ----- Player Page ----- */
-        .player-wrapper {
-            margin-top: 2rem;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .video-container {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background-color: #000;
-            border-radius: 1rem;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 1.5rem;
-        }
-
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .details-header {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .details-header {
-                flex-direction: row;
-                align-items: flex-start;
-                justify-content: space-between;
-            }
-        }
-
-        .details-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .details-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            color: var(--text-gray);
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        .details-overview {
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.8);
-            max-width: 800px;
-        }
-
-        /* Selectors for TV */
-        .selectors-container {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 1.5rem;
-        }
-
-        .custom-select {
-            padding: 12px 16px;
-            background-color: #1a1a1a;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: white;
-            font-family: inherit;
-            font-size: 1rem;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            min-width: 150px;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            transition: border-color 0.2s;
-        }
-
-        .custom-select:focus {
-            border-color: var(--yellow);
-        }
-
-        /* Loading Spinner */
+        /* Loading spinner */
         .loader {
             display: flex;
             justify-content: center;
@@ -581,85 +62,102 @@
             width: 40px;
             height: 40px;
             border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--yellow);
+            border-left-color: #EAB308;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
-<body>
-
+<body class="font-body min-h-screen bg-black text-white">
     <!-- Desktop Sidebar -->
-    <aside class="desktop-only sidebar">
-        <div class="logo-container">
-            <h2>NX</h2>
-        </div>
-        <div class="sidebar-nav">
-            <a href="#/" class="sidebar-link active" data-nav="home">
-                <span class="active-indicator"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span class="tooltip">Home</span>
-            </a>
-            <a href="#/search" class="sidebar-link" data-nav="search">
-                <span class="active-indicator"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                <span class="tooltip">Search</span>
-            </a>
-            <a href="#/" class="sidebar-link">
-                <span class="active-indicator"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
-                <span class="tooltip">NxBox</span>
-            </a>
-            <a href="#/" class="sidebar-link">
-                <span class="active-indicator"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
-                <span class="tooltip">WatchList</span>
-            </a>
-            <a href="#/" class="sidebar-link">
-                <span class="active-indicator"></span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span class="tooltip">My Space</span>
+    <aside class="desktop-only fixed left-0 top-0 bottom-0 z-50 flex w-[78px] flex-col items-center bg-transparent py-4 border-r border-white/10">
+        <div class="mb-auto pt-2">
+            <a class="flex items-center" href="#/">
+                <div class="text-yellow font-bold text-xl">CINE</div>
             </a>
         </div>
+        <div class="flex w-full flex-1 flex-col items-center justify-center gap-7 px-2">
+            <a title="Home" class="group relative flex h-12 w-12 items-center justify-center transition-all duration-200 nav-link text-gray-400 hover:text-white" href="#/" data-nav="home">
+                <span class="active-indicator absolute -left-[15px] h-6 w-1 rounded-r-full bg-yellow hidden"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="pointer-events-none absolute left-14 whitespace-nowrap rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-50">Home</span>
+            </a>
+            <a title="Search" class="group relative flex h-12 w-12 items-center justify-center transition-all duration-200 nav-link text-gray-400 hover:text-white" href="#/search" data-nav="search">
+                <span class="active-indicator absolute -left-[15px] h-6 w-1 rounded-r-full bg-yellow hidden"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                <span class="pointer-events-none absolute left-14 whitespace-nowrap rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-50">Search</span>
+            </a>
+            <a title="NxBox" class="group relative flex h-12 w-12 items-center justify-center transition-all duration-200 text-gray-400 hover:text-white" href="#/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                <span class="pointer-events-none absolute left-14 whitespace-nowrap rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-50">NxBox</span>
+            </a>
+            <a title="WatchList" class="group relative flex h-12 w-12 items-center justify-center transition-all duration-200 text-gray-400 hover:text-white" href="#/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                <span class="pointer-events-none absolute left-14 whitespace-nowrap rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-50">WatchList</span>
+            </a>
+            <a title="My Space" class="group relative flex h-12 w-12 items-center justify-center transition-all duration-200 text-gray-400 hover:text-white" href="#/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="pointer-events-none absolute left-14 whitespace-nowrap rounded-md bg-[#1a1a1a] px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-50">My Space</span>
+            </a>
+        </div>
+        <div class="mt-auto"></div>
     </aside>
 
     <!-- Mobile Bottom Nav -->
-    <nav class="mobile-only bottom-nav">
-        <a href="#/" class="bottom-link active" data-nav="home">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span>Home</span>
+    <nav class="mobile-only fixed bottom-2 left-3 right-3 z-50 flex items-center rounded-2xl border border-white/10 bg-black/75 px-1 py-1.5 backdrop-blur-xl">
+        <a class="nav-link-mobile flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white" href="#/" data-nav="home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-mobile"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span class="text-[10px] font-medium nav-text-mobile">Home</span>
         </a>
-        <a href="#/search" class="bottom-link" data-nav="search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <span>Search</span>
+        <a class="nav-link-mobile flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white" href="#/search" data-nav="search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-mobile"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <span class="text-[10px] font-medium nav-text-mobile">Search</span>
         </a>
-        <a href="#/" class="bottom-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
-            <span>NxBox</span>
+        <a class="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white" href="#/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+            <span class="text-[10px] font-medium">NxBox</span>
         </a>
-        <a href="#/" class="bottom-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
-            <span>WatchList</span>
+        <a class="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white" href="#/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+            <span class="text-[10px] font-medium">WatchList</span>
         </a>
-        <a href="#/" class="bottom-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>My Space</span>
+        <a class="flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white" href="#/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span class="text-[10px] font-medium">My Space</span>
         </a>
     </nav>
 
-    <main class="main-content">
-        <!-- Top Nav Pills -->
-        <div class="top-nav" id="topNav">
-            <a href="#/" class="nav-pill active">Home</a>
-            <a href="#/" class="nav-pill">Movies</a>
-            <a href="#/" class="nav-pill">TV Shows</a>
-            <a href="#/" class="nav-pill">Anime</a>
-        </div>
+    <!-- Main Content Area -->
+    <main class="content-with-sidebar relative">
+        <div class="min-h-screen pb-8">
+            <div class="relative">
+                <!-- Mobile Logo Header -->
+                <div class="mobile-only absolute left-4 right-4 top-6 z-30 flex items-center justify-between">
+                    <a class="flex items-center" href="#/">
+                        <div class="text-yellow font-bold text-2xl">CINEPEACE</div>
+                    </a>
+                </div>
+                
+                <!-- Top Nav Pills -->
+                <div class="absolute left-0 right-0 top-16 z-20 md:top-4" id="topNavContainer">
+                    <div class="relative flex flex-col gap-2 px-4 md:px-6">
+                        <div class="relative px-0 md:px-4 py-2 w-full">
+                            <div class="hide-scrollbar flex overflow-x-auto items-center gap-2 md:gap-4 md:w-full md:justify-start cursor-grab active:cursor-grabbing select-none" id="topNav">
+                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/" data-nav="top-home">Home</a>
+                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/movies" data-nav="top-movies">Movies</a>
+                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/tv" data-nav="top-tv">TV Shows</a>
+                                <a class="nav-pill min-w-[70px] flex-shrink-0 rounded-full border px-4 py-1.5 text-center text-[11px] md:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border-white/10 bg-[#11131a]/90 text-white hover:bg-[#1b1f2a]" href="#/anime" data-nav="top-anime">Anime</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div id="app">
-            <!-- Content injected by JS -->
+            <!-- Dynamic App Content -->
+            <div id="app" class="pt-32 md:pt-20 px-4 md:px-6">
+                <!-- Injected via JS -->
+            </div>
         </div>
     </main>
 
@@ -669,24 +167,74 @@
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
         const IMAGE_BASE_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
-        // Helper to update active navigation states
+        // --- UI State Management ---
         function updateNavState(hash) {
-            document.querySelectorAll('.sidebar-link, .bottom-link').forEach(el => el.classList.remove('active'));
-            let currentNav = 'home';
-            if (hash.startsWith('/search')) currentNav = 'search';
+            // Reset Sidebar & Mobile
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('text-yellow');
+                el.classList.add('text-gray-400');
+                el.querySelector('.active-indicator').classList.add('hidden');
+                el.querySelector('.nav-icon').classList.remove('drop-shadow-[0_0_8px_rgba(255,195,0,0.5)]');
+            });
+            document.querySelectorAll('.nav-link-mobile').forEach(el => {
+                el.classList.remove('bg-yellow', 'text-black', 'shadow-lg', 'shadow-yellow/20');
+                el.classList.add('text-gray-500', 'hover:bg-white/10', 'hover:text-white');
+                el.querySelector('.nav-text-mobile').classList.remove('text-black');
+            });
             
-            document.querySelectorAll(`[data-nav="${currentNav}"]`).forEach(el => el.classList.add('active'));
+            // Reset Top Pills
+            document.querySelectorAll('.nav-pill').forEach(el => {
+                el.classList.remove('border-yellow', 'bg-yellow', 'text-black', 'shadow-lg', 'shadow-yellow/20');
+                el.classList.add('border-white/10', 'bg-[#11131a]/90', 'text-white', 'hover:bg-[#1b1f2a]');
+            });
 
-            // Show/Hide top nav pills based on route
-            const topNav = document.getElementById('topNav');
-            if(hash === '/' || hash === '') {
-                topNav.style.display = 'flex';
+            let currentNav = 'home';
+            let topNavActive = 'top-home';
+            
+            if (hash.startsWith('/search')) currentNav = 'search';
+            if (hash === '/movies') topNavActive = 'top-movies';
+            else if (hash === '/tv') topNavActive = 'top-tv';
+            else if (hash === '/anime') topNavActive = 'top-anime';
+            else if (hash.startsWith('/movie/') || hash.startsWith('/tv/')) {
+                topNavActive = ''; 
+            }
+
+            // Set Sidebar Active
+            const sidebarLinks = document.querySelectorAll(`.nav-link[data-nav="${currentNav}"]`);
+            sidebarLinks.forEach(el => {
+                el.classList.remove('text-gray-400');
+                el.classList.add('text-yellow');
+                el.querySelector('.active-indicator').classList.remove('hidden');
+                el.querySelector('.nav-icon').classList.add('drop-shadow-[0_0_8px_rgba(255,195,0,0.5)]');
+            });
+
+            // Set Mobile Active
+            const mobileLinks = document.querySelectorAll(`.nav-link-mobile[data-nav="${currentNav}"]`);
+            mobileLinks.forEach(el => {
+                el.classList.remove('text-gray-500', 'hover:bg-white/10', 'hover:text-white');
+                el.classList.add('bg-yellow', 'text-black', 'shadow-lg', 'shadow-yellow/20');
+                el.querySelector('.nav-text-mobile').classList.add('text-black');
+            });
+
+            // Set Top Pill Active
+            if (topNavActive) {
+                const topPills = document.querySelectorAll(`.nav-pill[data-nav="${topNavActive}"]`);
+                topPills.forEach(el => {
+                    el.classList.remove('border-white/10', 'bg-[#11131a]/90', 'text-white', 'hover:bg-[#1b1f2a]');
+                    el.classList.add('border-yellow', 'bg-yellow', 'text-black', 'shadow-lg', 'shadow-yellow/20');
+                });
+            }
+
+            // Show/Hide top nav container
+            const topNavContainer = document.getElementById('topNavContainer');
+            if(hash === '/' || hash === '' || hash === '/movies' || hash === '/tv' || hash === '/anime') {
+                topNavContainer.style.display = 'block';
             } else {
-                topNav.style.display = 'none';
+                topNavContainer.style.display = 'none';
             }
         }
 
-        // Fetch Utilities
+        // --- Fetch API ---
         async function fetchAPI(endpoint) {
             const separator = endpoint.includes('?') ? '&' : '?';
             try {
@@ -699,12 +247,12 @@
             }
         }
 
-        // UI Components
+        // --- Component Builders ---
         function getRatingBadge(vote) {
             if (!vote) return '';
             return `
-                <div class="media-rating">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <div class="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="text-yellow" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                     ${vote.toFixed(1)}
                 </div>
             `;
@@ -716,21 +264,70 @@
                 const title = item.title || item.name;
                 const year = new Date(item.release_date || item.first_air_date).getFullYear() || '';
                 return `
-                    <a href="#/${type}/${item.id}" class="media-card">
-                        <div class="media-poster-container">
-                            <img src="${IMAGE_BASE}${item.poster_path}" alt="${title}" class="media-poster" loading="lazy" />
+                    <a href="#/${type}/${item.id}" class="w-[146px] md:w-[160px] flex-shrink-0 space-y-3 group block">
+                        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-yellow/10">
+                            <img src="${IMAGE_BASE}${item.poster_path}" alt="${title}" class="w-full h-[218px] md:h-[240px] object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                             ${getRatingBadge(item.vote_average)}
                         </div>
-                        <div class="media-title">${title}</div>
-                        <div class="media-year">${year} ${type === 'movie' ? '• Movie' : (type === 'tv' ? '• TV' : '')}</div>
+                        <div>
+                            <div class="text-[14px] font-medium truncate">${title}</div>
+                            <div class="text-xs text-gray-400 mt-1">${year} ${type === 'movie' ? '• Movie' : (type === 'tv' ? '• TV' : '')}</div>
+                        </div>
                     </a>
                 `;
             }).join('');
         }
 
-        // Page Renderers
+        function getSkeletonHTML() {
+            return `
+                <div class="space-y-8">
+                    <!-- Hero Skeleton -->
+                    <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b]">
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/40"></div>
+                        <div class="relative flex min-h-[42vh] flex-col justify-end px-4 pb-12 pt-24 text-center md:min-h-[58vh] md:px-8 md:pb-24 md:pt-32">
+                            <div class="mx-auto flex w-full max-w-4xl flex-col items-center px-1">
+                                <div class="skeleton mb-4 h-5 w-28 rounded-full opacity-90"></div>
+                                <div class="space-y-3">
+                                    <div class="skeleton h-14 w-[72vw] max-w-[520px] rounded-[1.5rem] opacity-90 md:h-20"></div>
+                                </div>
+                                <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+                                    <div class="skeleton h-8 w-16 rounded-full opacity-80"></div>
+                                    <div class="skeleton h-8 w-24 rounded-full opacity-80"></div>
+                                </div>
+                                <div class="mt-7 flex flex-wrap justify-center gap-3">
+                                    <div class="skeleton h-12 w-36 rounded-full opacity-90"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Row Skeleton -->
+                    <section class="space-y-4">
+                        <div class="flex items-center justify-between px-1">
+                            <div class="space-y-2">
+                                <div class="skeleton h-6 w-44 rounded-full"></div>
+                                <div class="skeleton h-3 w-28 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 overflow-hidden px-1 md:gap-4">
+                            ${Array(5).fill(`
+                            <div class="w-[146px] flex-shrink-0 space-y-3 md:w-[160px]">
+                                <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                                    <div class="skeleton h-[218px] md:h-[240px]"></div>
+                                </div>
+                                <div class="skeleton h-4 w-[86%] rounded-full"></div>
+                                <div class="skeleton h-3 w-[56%] rounded-full"></div>
+                            </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
+        // --- Renderers ---
         async function renderHome(container) {
-            container.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            // Initial loader
+            container.innerHTML = getSkeletonHTML();
             
             const [trendingAll, movies, tv] = await Promise.all([
                 fetchAPI('/trending/all/day'),
@@ -739,7 +336,7 @@
             ]);
 
             if (!trendingAll) {
-                container.innerHTML = '<div class="container" style="padding-top:20px; text-align:center;">Failed to load data.</div>';
+                container.innerHTML = '<div class="text-center py-10">Failed to load data.</div>';
                 return;
             }
 
@@ -748,24 +345,29 @@
             const heroTitle = heroItem.title || heroItem.name;
             const heroYear = new Date(heroItem.release_date || heroItem.first_air_date).getFullYear() || '';
 
-            let html = `<div class="container">`;
+            let html = `<div class="space-y-8">`;
             
             if (heroItem && heroItem.backdrop_path) {
                 html += `
-                    <div class="hero">
-                        <img src="${IMAGE_BASE_ORIGINAL}${heroItem.backdrop_path}" class="hero-bg" alt="${heroTitle}" />
-                        <div class="hero-content">
-                            <div class="hero-meta">
-                                <span class="hero-badge">${heroYear}</span>
-                                <span class="hero-badge">${heroType.toUpperCase()}</span>
-                                <span class="hero-badge">⭐ ${heroItem.vote_average.toFixed(1)}</span>
+                    <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b]">
+                        <div class="absolute inset-0">
+                            <img src="${IMAGE_BASE_ORIGINAL}${heroItem.backdrop_path}" alt="${heroTitle}" class="w-full h-full object-cover opacity-50" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                        </div>
+                        <div class="relative flex min-h-[42vh] flex-col justify-end px-4 pb-12 pt-24 text-center md:min-h-[58vh] md:px-8 md:pb-24 md:pt-32">
+                            <div class="mx-auto flex w-full max-w-4xl flex-col items-center px-1">
+                                <div class="mb-4 flex flex-wrap items-center justify-center gap-2">
+                                    <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold">${heroYear}</span>
+                                    <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold">${heroType.toUpperCase()}</span>
+                                    <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-yellow flex items-center gap-1">⭐ ${heroItem.vote_average.toFixed(1)}</span>
+                                </div>
+                                <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 text-shadow-lg">${heroTitle}</h1>
+                                <p class="text-sm md:text-base text-gray-300 max-w-2xl line-clamp-3 mb-8 leading-relaxed">${heroItem.overview}</p>
+                                <a href="#/${heroType}/${heroItem.id}" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-yellow text-black font-bold rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                    Watch Now
+                                </a>
                             </div>
-                            <h1 class="hero-title">${heroTitle}</h1>
-                            <p class="hero-overview">${heroItem.overview}</p>
-                            <a href="#/${heroType}/${heroItem.id}" class="btn-play">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                Watch Now
-                            </a>
                         </div>
                     </div>
                 `;
@@ -773,23 +375,27 @@
 
             if (movies && movies.results.length > 0) {
                 html += `
-                    <div class="section-header">
-                        <h2 class="section-title">Trending Movies</h2>
-                    </div>
-                    <div class="media-row">
-                        ${buildMediaCards(movies.results, 'movie')}
-                    </div>
+                    <section class="space-y-4">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Trending Movies</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(movies.results, 'movie')}
+                        </div>
+                    </section>
                 `;
             }
 
             if (tv && tv.results.length > 0) {
                 html += `
-                    <div class="section-header" style="margin-top: 1rem;">
-                        <h2 class="section-title">Trending TV Shows</h2>
-                    </div>
-                    <div class="media-row">
-                        ${buildMediaCards(tv.results, 'tv')}
-                    </div>
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Trending TV Shows</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(tv.results, 'tv')}
+                        </div>
+                    </section>
                 `;
             }
 
@@ -799,15 +405,13 @@
 
         async function renderSearch(container) {
             container.innerHTML = `
-                <div class="container">
-                    <div class="search-header">
-                        <div class="search-input-wrapper">
-                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                            <input type="text" id="searchInput" class="search-input" placeholder="Search movies, tv shows, anime..." autocomplete="off"/>
-                        </div>
+                <div class="max-w-7xl mx-auto mt-4 md:mt-8">
+                    <div class="relative max-w-2xl mx-auto mb-10">
+                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                        <input type="text" id="searchInput" class="w-full bg-[#11131a] border border-white/10 rounded-full py-4 pl-12 pr-6 text-white text-lg focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors placeholder:text-gray-500" placeholder="Search movies, tv shows..." autocomplete="off"/>
                     </div>
-                    <div id="searchResults" class="search-grid">
-                        <div style="grid-column: 1/-1; text-align:center; color: var(--text-gray); margin-top: 40px;">
+                    <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                        <div class="col-span-full text-center text-gray-500 py-20 text-lg">
                             Type to start searching...
                         </div>
                     </div>
@@ -817,7 +421,6 @@
             const input = document.getElementById('searchInput');
             const resultsDiv = document.getElementById('searchResults');
             
-            // Auto focus if not on mobile (can cause annoying keyboard popups immediately)
             if (window.innerWidth > 768) {
                 setTimeout(() => input.focus(), 100);
             }
@@ -828,35 +431,101 @@
                 const query = e.target.value.trim();
                 
                 if (!query) {
-                    resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--text-gray); margin-top: 40px;">Type to start searching...</div>';
+                    resultsDiv.innerHTML = '<div class="col-span-full text-center text-gray-500 py-20 text-lg">Type to start searching...</div>';
                     return;
                 }
 
-                resultsDiv.innerHTML = '<div style="grid-column: 1/-1; display:flex; justify-content:center; padding: 40px;"><div class="spinner"></div></div>';
+                resultsDiv.innerHTML = '<div class="col-span-full flex justify-center py-20"><div class="spinner"></div></div>';
 
                 debounceTimer = setTimeout(async () => {
                     const data = await fetchAPI(`/search/multi?query=${encodeURIComponent(query)}`);
                     if (data && data.results && data.results.length > 0) {
                         const filtered = data.results.filter(i => i.media_type === 'movie' || i.media_type === 'tv');
                         if (filtered.length > 0) {
-                            resultsDiv.innerHTML = buildMediaCards(filtered, 'movie');
+                            resultsDiv.innerHTML = filtered.filter(item => item.poster_path).map(item => {
+                                const type = item.media_type || 'movie';
+                                const title = item.title || item.name;
+                                const year = new Date(item.release_date || item.first_air_date).getFullYear() || '';
+                                return `
+                                    <a href="#/${type}/${item.id}" class="w-full space-y-3 group block">
+                                        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-yellow/10 aspect-[2/3]">
+                                            <img src="${IMAGE_BASE}${item.poster_path}" alt="${title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                                            ${getRatingBadge(item.vote_average)}
+                                        </div>
+                                        <div>
+                                            <div class="text-[14px] font-medium truncate">${title}</div>
+                                            <div class="text-xs text-gray-400 mt-1">${year} ${type === 'movie' ? '• Movie' : (type === 'tv' ? '• TV' : '')}</div>
+                                        </div>
+                                    </a>
+                                `;
+                            }).join('');
                         } else {
-                            resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--text-gray); margin-top: 40px;">No movies or TV shows found.</div>';
+                            resultsDiv.innerHTML = '<div class="col-span-full text-center text-gray-500 py-20 text-lg">No movies or TV shows found.</div>';
                         }
                     } else {
-                        resultsDiv.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--text-gray); margin-top: 40px;">No results found.</div>';
+                        resultsDiv.innerHTML = '<div class="col-span-full text-center text-gray-500 py-20 text-lg">No results found.</div>';
                     }
                 }, 600);
             });
         }
 
+        async function renderList(container, type) {
+            container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
+            
+            let endpoint = '';
+            let title = '';
+            if (type === 'movies') {
+                endpoint = '/discover/movie?sort_by=popularity.desc';
+                title = 'Popular Movies';
+            } else if (type === 'tv') {
+                endpoint = '/discover/tv?sort_by=popularity.desc';
+                title = 'Popular TV Shows';
+            } else if (type === 'anime') {
+                endpoint = '/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc';
+                title = 'Popular Anime';
+            }
+
+            const data = await fetchAPI(endpoint);
+            if (!data) {
+                container.innerHTML = '<div class="text-center py-20">Failed to load data.</div>';
+                return;
+            }
+
+            let cardsHtml = data.results.filter(item => item.poster_path).map(item => {
+                const itemType = type === 'movies' ? 'movie' : 'tv';
+                const itemTitle = item.title || item.name;
+                const year = new Date(item.release_date || item.first_air_date).getFullYear() || '';
+                return `
+                    <a href="#/${itemType}/${item.id}" class="w-full space-y-3 group block">
+                        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-yellow/10 aspect-[2/3]">
+                            <img src="${IMAGE_BASE}${item.poster_path}" alt="${itemTitle}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                            ${getRatingBadge(item.vote_average)}
+                        </div>
+                        <div>
+                            <div class="text-[14px] font-medium truncate">${itemTitle}</div>
+                            <div class="text-xs text-gray-400 mt-1">${year}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="max-w-7xl mx-auto mt-4 md:mt-8">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-8">${title}</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                        ${cardsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
         async function renderPlayer(container, type, id) {
-            container.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
             
             const details = await fetchAPI(`/${type}/${id}`);
             
             if (!details) {
-                container.innerHTML = '<div class="container" style="padding-top:20px; text-align:center;">Failed to load details.</div>';
+                container.innerHTML = '<div class="text-center py-20">Failed to load details.</div>';
                 return;
             }
 
@@ -864,38 +533,62 @@
             const year = new Date(details.release_date || details.first_air_date).getFullYear() || '';
             const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]) ? `${details.runtime || details.episode_run_time[0]} min` : '';
             
-            let html = `
-                <div class="container player-wrapper">
-                    <div class="video-container">
-                        <iframe id="videoPlayer" src="" allowfullscreen></iframe>
-                    </div>
-            `;
+            let html = `<div class="max-w-[1400px] mx-auto pb-20">`;
+            
+            // Adjust container margin if we are rendering a backdrop hero
+            container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
 
-            // If TV Show, add selectors
-            if (type === 'tv') {
+            if (details.backdrop_path) {
                 html += `
-                    <div class="selectors-container">
-                        <select id="seasonSelect" class="custom-select"></select>
-                        <select id="episodeSelect" class="custom-select"></select>
+                    <div class="relative overflow-hidden bg-[#0b0b0b] min-h-[50vh] flex flex-col justify-end">
+                        <div class="absolute inset-0">
+                            <img src="${IMAGE_BASE_ORIGINAL}${details.backdrop_path}" alt="${title}" class="w-full h-full object-cover opacity-30" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                        </div>
+                        <div class="relative z-10 px-4 md:px-12 pb-16 pt-32 md:pt-40">
+                            <div class="max-w-5xl">
+                                <h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-4">${title}</h1>
+                                <div class="flex flex-wrap items-center gap-3 mb-6">
+                                    ${year ? `<span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold">${year}</span>` : ''}
+                                    ${runtime ? `<span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold">${runtime}</span>` : ''}
+                                    <span class="bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs md:text-sm font-semibold text-yellow flex items-center gap-1">⭐ ${details.vote_average.toFixed(1)}</span>
+                                </div>
+                                <p class="text-base md:text-lg text-gray-300 leading-relaxed max-w-3xl mb-6">${details.overview}</p>
+                                ${details.genres ? `
+                                <div class="flex flex-wrap gap-2">
+                                    ${details.genres.map(g => `<span class="px-3 py-1 border border-white/20 rounded-full text-xs text-gray-300">${g.name}</span>`).join('')}
+                                </div>` : ''}
+                            </div>
+                        </div>
                     </div>
                 `;
             }
 
             html += `
-                    <div class="details-header">
-                        <div style="flex: 1;">
-                            <h1 class="details-title">${title}</h1>
-                            <div class="details-meta">
-                                ${year ? `<span>${year}</span> • ` : ''}
-                                ${runtime ? `<span>${runtime}</span> • ` : ''}
-                                <span>⭐ ${details.vote_average.toFixed(1)}</span>
-                                ${details.genres ? ` • <span>${details.genres.map(g => g.name).join(', ')}</span>` : ''}
-                            </div>
-                            <p class="details-overview">${details.overview}</p>
+                <div class="px-4 md:px-12 ${details.backdrop_path ? '-mt-8' : 'mt-8'} relative z-20">
+                    <div class="w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black">
+                        <iframe id="videoPlayer" src="" class="w-full h-full border-none" allowfullscreen></iframe>
+                    </div>
+            `;
+
+            if (type === 'tv') {
+                html += `
+                    <div class="mt-6 flex flex-wrap gap-4 bg-[#11131a] p-4 md:p-6 rounded-2xl border border-white/5">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Season</label>
+                            <select id="seasonSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Episode</label>
+                            <select id="episodeSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
                         </div>
                     </div>
+                `;
+            }
+
+            html += `
                 </div>
-            `;
+            </div>`;
 
             container.innerHTML = html;
 
@@ -907,8 +600,6 @@
                 const seasonSelect = document.getElementById('seasonSelect');
                 const episodeSelect = document.getElementById('episodeSelect');
                 
-                // Filter out season 0 (specials) usually, but we can include it if wanted. 
-                // Let's include seasons > 0.
                 const validSeasons = details.seasons.filter(s => s.season_number > 0);
                 
                 validSeasons.forEach(s => {
@@ -953,10 +644,13 @@
             }
         }
 
-        // Router Setup
+        // --- Router ---
         function router() {
             const hash = window.location.hash.slice(1) || '/';
             const app = document.getElementById('app');
+            
+            // Reset container classes (Player removes them)
+            app.className = "pt-32 md:pt-20 px-4 md:px-6";
             
             updateNavState(hash);
             window.scrollTo(0, 0);
@@ -965,6 +659,12 @@
                 renderHome(app);
             } else if (hash.startsWith('/search')) {
                 renderSearch(app);
+            } else if (hash === '/movies') {
+                renderList(app, 'movies');
+            } else if (hash === '/tv') {
+                renderList(app, 'tv');
+            } else if (hash === '/anime') {
+                renderList(app, 'anime');
             } else if (hash.startsWith('/movie/')) {
                 const id = hash.split('/')[2];
                 if (id) renderPlayer(app, 'movie', id);
@@ -972,14 +672,12 @@
                 const id = hash.split('/')[2];
                 if (id) renderPlayer(app, 'tv', id);
             } else {
-                app.innerHTML = '<div class="container" style="padding-top: 40px; text-align:center;"><h2>Page Not Found</h2></div>';
+                app.innerHTML = '<div class="text-center py-32 text-2xl font-bold text-gray-500">Page Not Found</div>';
             }
         }
 
-        // Initialize Router
         window.addEventListener('hashchange', router);
         window.addEventListener('DOMContentLoaded', router);
-
     </script>
 </body>
 </html>
