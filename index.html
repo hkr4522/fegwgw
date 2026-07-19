@@ -34,23 +34,7 @@
             font-family: 'Outfit', sans-serif;
         }
 
-        .desktop-only {
-            display: none;
-        }
-
-        .mobile-only {
-            display: flex;
-        }
-
         @media (min-width: 768px) {
-            .desktop-only {
-                display: flex;
-            }
-
-            .mobile-only {
-                display: none;
-            }
-
             .content-with-sidebar {
                 margin-left: 78px;
             }
@@ -112,7 +96,7 @@
 <body class="font-body min-h-screen bg-black text-white">
     <!-- Desktop Sidebar -->
     <aside
-        class="desktop-only fixed left-0 top-0 bottom-0 z-50 flex w-[78px] flex-col items-center bg-transparent py-4 border-r border-white/10">
+        class="hidden md:flex fixed left-0 top-0 bottom-0 z-50 w-[78px] flex-col items-center bg-transparent py-4 border-r border-white/10">
         <div class="mb-auto pt-2">
             <a class="flex items-center" href="#/">
                 <div class="text-yellow font-bold text-xl">CINE</div>
@@ -188,7 +172,7 @@
 
     <!-- Mobile Bottom Nav -->
     <nav
-        class="mobile-only fixed bottom-2 left-3 right-3 z-50 flex items-center rounded-2xl border border-white/10 bg-black/75 px-1 py-1.5 backdrop-blur-xl">
+        class="md:hidden fixed bottom-2 left-3 right-3 z-50 flex items-center rounded-2xl border border-white/10 bg-black/75 px-1 py-1.5 backdrop-blur-xl">
         <a class="nav-link-mobile flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white"
             href="#/" data-nav="home">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -246,7 +230,7 @@
         <div class="min-h-screen pb-8">
             <div class="relative">
                 <!-- Mobile Logo Header -->
-                <div class="mobile-only absolute left-4 right-4 top-4 z-30 flex items-center justify-between">
+                <div class="md:hidden absolute left-4 right-4 top-4 z-30 flex items-center justify-between">
                     <a class="flex items-center" href="#/">
                         <div class="text-yellow font-bold text-2xl drop-shadow-md">CINEPEACE</div>
                     </a>
@@ -478,16 +462,23 @@
             // Initial loader
             container.innerHTML = getSkeletonHTML();
 
-            const [trendingAll, movies, tv, indian, anime, topMovies, topTv, latestMovies, latestTv] = await Promise.all([
+            const [trendingAll, movies, tv, indian, topMovies, topTv, latestMovies, latestTv, actionAdv, romance, kdrama, blockbusters, cartoonTv, cartoonMovie, netflix, disney] = await Promise.all([
                 fetchAPI('/trending/all/day'),
                 fetchAPI('/trending/movie/day'),
                 fetchAPI('/trending/tv/day'),
-                fetchAPI('/discover/movie?with_original_language=hi&sort_by=popularity.desc'),
-                fetchAPI('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc'),
+                fetchAPI('/discover/movie?with_original_language=hi'),
                 fetchAPI('/movie/top_rated'),
                 fetchAPI('/tv/top_rated'),
                 fetchAPI('/movie/now_playing'),
-                fetchAPI('/tv/on_the_air')
+                fetchAPI('/tv/on_the_air'),
+                fetchAPI('/discover/movie?with_genres=28,12'),
+                fetchAPI('/discover/movie?with_genres=10749'),
+                fetchAPI('/discover/tv?with_original_language=ko'),
+                fetchAPI('/discover/movie?with_original_language=en&sort_by=revenue.desc'),
+                fetchAPI('/discover/tv?with_genres=16'),
+                fetchAPI('/discover/movie?with_genres=16'),
+                fetchAPI('/discover/tv?with_networks=213'),
+                fetchAPI('/discover/tv?with_networks=2739')
             ]);
 
             if (!trendingAll) {
@@ -630,6 +621,110 @@
                             </div>
                         </section>
                     `;
+            }
+
+            if (blockbusters && blockbusters.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Hollywood Blockbusters</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(blockbusters.results, 'movie')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (actionAdv && actionAdv.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Action & Adventure Movies</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(actionAdv.results, 'movie')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (romance && romance.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Romance Movies</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(romance.results, 'movie')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (kdrama && kdrama.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Binge-worthy K-Dramas</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(kdrama.results, 'tv')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (cartoonTv && cartoonTv.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Cartoon TV Shows</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(cartoonTv.results, 'tv')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (cartoonMovie && cartoonMovie.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Cartoon Movies</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(cartoonMovie.results, 'movie')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (netflix && netflix.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Netflix Originals</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(netflix.results, 'tv')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            if (disney && disney.results.length > 0) {
+                html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Disney+ & Hotstar Shows</h2>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${buildMediaCards(disney.results, 'tv')}
+                        </div>
+                    </section>
+                `;
             }
 
             html += `</div>`;
