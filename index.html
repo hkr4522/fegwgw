@@ -1182,7 +1182,7 @@
             if (!watchBtn) return;
             const s = document.getElementById('seasonSelectDetails')?.value || 1;
             const e = document.getElementById('episodeSelectDetails')?.value || 1;
-            watchBtn.href = `#/watch/tv/${id}?s=${s}&e=${e}`;
+            watchBtn.href = `#/watch/tv/${id}/${s}/${e}`;
         };
 
         async function renderDetails(container, type, id) {
@@ -1243,10 +1243,10 @@
                                 ` : ''}
 
                                 <div class="mt-8 flex flex-wrap justify-center w-full border-b border-transparent gap-4">
-                                    <a id="watchNowBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-yellow text-black rounded-full transition-transform hover:scale-105 md:w-auto shadow-[0_0_20px_rgba(234,179,8,0.4)]" href="#/watch/${type}/${id}${type === 'tv' ? '?s=1&e=1' : ''}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch Now
-                                    </a>
-                                    <button onclick="toggleWatchlist(${id}, '${type}', '${title.replace(/'/g, "\\'")}', '${details.poster_path}', ${details.vote_average}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-white/10 text-white border border-white/20 rounded-full transition-all hover:bg-white/20 md:w-auto backdrop-blur-md">
+                                     <a id="watchNowBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-primary text-white rounded-full transition-transform hover:scale-105 md:w-auto shadow-[0_0_20px_rgba(139,92,246,0.5)]" href="#/watch/${type}/${id}${type === 'tv' ? '/1/1' : ''}">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch Now
+                                     </a>
+                                     <button onclick="toggleWatchlist(${id}, '${type}', '${title.replace(/'/g, "\\'")}', '${details.poster_path}', ${details.vote_average}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-white/10 text-white border border-white/20 rounded-full transition-all hover:bg-white/20 md:w-auto backdrop-blur-md">
                                         ${isInWatchlist(id) ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> In Watchlist' : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> + Watchlist'}
                                     </button>
                                 </div>
@@ -1685,7 +1685,6 @@
             epManualInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleManualEpisode();
             });
-
             // Initial Draw
             updateServerButtons();
             updateFormatButtons();
@@ -1693,9 +1692,14 @@
             updatePlayerIframe();
         }
 
-        async function renderPlayer(container, type, id) {
+        async function renderPlayer(container, type, id, season, episode) {
             container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
-            const details = await fetchAPI(`/${type}/${id}`);
+
+            const [details, credits, similar] = await Promise.all([
+                fetchAPI(`/${type}/${id}`),
+                fetchAPI(`/${type}/${id}/credits`),
+                fetchAPI(`/${type}/${id}/similar`)
+            ]);
 
             if (!details) {
                 container.innerHTML = '<div class="text-center py-20">Failed to load details.</div>';
@@ -1703,106 +1707,425 @@
             }
 
             const title = details.title || details.name;
+            const rating = details.vote_average ? details.vote_average.toFixed(1) : '';
+            const year = new Date(details.release_date || details.first_air_date).getFullYear() || '';
+            const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]) ? `${details.runtime || details.episode_run_time[0]} min` : '';
+
             container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
 
-            let html = `
-                    <div class="relative min-h-screen bg-[#050505] text-white">
+            if (type === 'movie') {
+                // --- MOVIE LAYOUT ---
+                let currentServer = 'cine1'; // 'cine1' or 'cine2'
+
+                let html = `
+                    <div class="relative min-h-screen bg-[#050507] text-white pb-20">
                         <div class="fixed inset-0 pointer-events-none -z-10">
-                            ${details.backdrop_path ? `<div class="absolute inset-0 opacity-30 blur-[100px] saturate-150" style="background-image:url(${IMAGE_BASE_ORIGINAL}${details.backdrop_path});background-size:cover;background-position:center"></div>` : ''}
-                            <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/60 via-[#050505] to-[#050505]"></div>
+                            ${details.backdrop_path ? `<div class="absolute inset-0 opacity-20 blur-[100px] saturate-150" style="background-image:url(${IMAGE_BASE_ORIGINAL}${details.backdrop_path});background-size:cover;background-position:center"></div>` : ''}
+                            <div class="absolute inset-0 bg-gradient-to-b from-[#050507]/60 via-[#050507] to-[#050507]"></div>
                         </div>
-                        <div class="relative z-10 w-full mx-auto pt-4 sm:pt-6 lg:pt-12 max-w-7xl">
-                            <div class="px-4 sm:px-6 flex items-center justify-between mb-4 sm:mb-6">
+
+                        <div class="relative z-10 w-full mx-auto pt-4 sm:pt-6 lg:pt-10 max-w-7xl px-4 sm:px-6">
+                            <!-- Path Breadcrumbs -->
+                            <div class="flex items-center justify-between mb-4 sm:mb-6">
                                 <div class="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md">
                                     <a class="hover:text-white transition-colors" href="#/">Home</a>
                                     <span class="opacity-40">•</span>
-                                    <span class="hover:text-white transition-colors">${type}</span>
+                                    <a class="hover:text-white transition-colors" href="#/movies">Movies</a>
                                     <span class="opacity-40">•</span>
-                                    <span class="text-white max-w-[120px] sm:max-w-[200px] md:max-w-xs truncate">${title}</span>
+                                    <span class="text-white truncate max-w-[150px] sm:max-w-xs">${title}</span>
                                 </div>
-                                <a href="#/${type}/${id}" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5 hover:border-white/10 hover:scale-105 active:scale-95" aria-label="Go back">
+                                <a href="#/movie/${id}" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5 hover:border-white/10 hover:scale-105 active:scale-95">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
                                 </a>
                             </div>
-                            <section class="w-full sm:px-6 relative z-20">
-                                <div class="relative w-full aspect-video overflow-hidden bg-black sm:rounded-2xl sm:ring-1 sm:ring-white/10 pointer-events-auto shadow-2xl">
-                                    <iframe id="videoPlayer" src="" class="absolute inset-0 w-full h-full border-0 pointer-events-auto" allowfullscreen></iframe>
+
+                            <!-- Movie Grid -->
+                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                                <!-- Player Column (Left 75%) -->
+                                <div class="lg:col-span-3 space-y-6">
+                                    <div class="relative w-full aspect-video overflow-hidden bg-black rounded-2xl ring-1 ring-white/10 shadow-2xl shadow-primary/5">
+                                        <iframe id="movieVideoPlayer" src="" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+                                    </div>
+
+                                    <!-- Servers Card -->
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md space-y-3">
+                                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Select Server</span>
+                                        <div class="flex flex-wrap gap-2" id="movieServerContainer">
+                                            <button id="srvCine1" class="px-4 py-2 text-xs font-bold rounded-lg border transition-all">Cine 1</button>
+                                            <button id="srvCine2" class="px-4 py-2 text-xs font-bold rounded-lg border transition-all">Cine 2</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Synopsis Card -->
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-md">
+                                        <h1 class="text-2xl sm:text-3xl font-bold mb-2 text-white">${title}</h1>
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            <span class="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary">Movie</span>
+                                            ${rating ? `<span class="bg-black/30 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="#FFC300" stroke="#FFC300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${rating}</span>` : ''}
+                                            ${year ? `<span class="bg-black/30 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${year}</span>` : ''}
+                                            ${runtime ? `<span class="bg-black/30 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${runtime}</span>` : ''}
+                                        </div>
+                                        <p class="text-gray-300 text-sm md:text-base leading-relaxed">${details.overview || 'No synopsis available.'}</p>
+                                    </div>
                                 </div>
-                `;
 
-            if (type === 'tv') {
-                html += `
-                        <div class="mt-4 sm:mt-6 flex flex-wrap gap-4 mx-4 sm:mx-0">
-                            <div class="flex-1 min-w-[200px]">
-                                <select id="seasonSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
-                            </div>
-                            <div class="flex-1 min-w-[200px]">
-                                <select id="episodeSelect" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"></select>
-                            </div>
-                        </div>
-                    `;
-            }
+                                <!-- Movie Metadata Sidebar (Right 25%) -->
+                                <div class="space-y-6">
+                                    <!-- Statistics Card -->
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md space-y-4">
+                                        <h2 class="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-2">Information</h2>
+                                        <div class="space-y-2.5 text-xs">
+                                            <div>
+                                                <span class="text-gray-400 block mb-0.5">Rating</span>
+                                                <span class="text-white font-medium">${rating ? `${rating} / 10` : 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-400 block mb-0.5">Released</span>
+                                                <span class="text-white font-medium">${details.release_date || 'Unknown'}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-400 block mb-0.5">Runtime</span>
+                                                <span class="text-white font-medium">${runtime || 'Unknown'}</span>
+                                            </div>
+                                            ${details.genres ? `
+                                            <div>
+                                                <span class="text-gray-400 block mb-1">Genres</span>
+                                                <div class="flex flex-wrap gap-1.5">
+                                                    ${details.genres.map(g => `<span class="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] text-gray-300">${g.name}</span>`).join('')}
+                                                </div>
+                                            </div>` : ''}
+                                        </div>
+                                    </div>
 
-            html += `
-                            </section>
+                                    <!-- Cast Sidebar List -->
+                                    ${credits && credits.cast && credits.cast.length > 0 ? `
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md space-y-4">
+                                        <h2 class="text-sm font-bold uppercase tracking-wider text-white border-b border-white/10 pb-2">Cast</h2>
+                                        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-thin">
+                                            ${credits.cast.filter(c => c.profile_path).slice(0, 6).map(actor => `
+                                                <div class="flex items-center gap-3">
+                                                    <img src="${IMAGE_BASE}${actor.profile_path}" alt="${actor.name}" class="h-9 w-9 rounded-full object-cover border border-white/10" />
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-semibold text-white truncate">${actor.name}</p>
+                                                        <p class="text-[10px] text-gray-400 truncate">${actor.character}</p>
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Recommendations row -->
+                            ${similar && similar.results && similar.results.length > 0 ? `
+                            <div class="mt-12">
+                                <h2 class="text-xl sm:text-2xl font-bold mb-6 text-white">Recommendations</h2>
+                                <div class="flex gap-3 overflow-x-auto pb-4 hide-scrollbar -mx-1 pl-1 cursor-grab active:cursor-grabbing">
+                                    ${buildMediaCards(similar.results, 'movie')}
+                                </div>
+                            </div>` : ''}
                         </div>
                     </div>
                 `;
-            container.innerHTML = html;
 
-            const player = document.getElementById('videoPlayer');
+                container.innerHTML = html;
 
-            if (type === 'movie') {
-                player.src = `https://hkr4522.github.io/rjtrjrtj/movie/${id}`;
+                const player = document.getElementById('movieVideoPlayer');
+                const srvCine1 = document.getElementById('srvCine1');
+                const srvCine2 = document.getElementById('srvCine2');
+
+                const updateMovieIframe = () => {
+                    if (currentServer === 'cine1') {
+                        player.src = `https://www.vidking.net//embed/movie/${details.id}`;
+                    } else {
+                        player.src = `https://hkr4522.github.io/rjtrjrtj/movie/${details.id}`;
+                    }
+
+                    // Update button classes
+                    [srvCine1, srvCine2].forEach(btn => {
+                        btn.className = "px-4 py-2 text-xs font-bold rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all";
+                    });
+                    if (currentServer === 'cine1') {
+                        srvCine1.className = "px-4 py-2 text-xs font-bold rounded-lg border border-primary bg-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all";
+                    } else {
+                        srvCine2.className = "px-4 py-2 text-xs font-bold rounded-lg border border-primary bg-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all";
+                    }
+                };
+
+                srvCine1.addEventListener('click', () => { currentServer = 'cine1'; updateMovieIframe(); });
+                srvCine2.addEventListener('click', () => { currentServer = 'cine2'; updateMovieIframe(); });
+
+                // Initial load
+                updateMovieIframe();
+
             } else if (type === 'tv') {
-                const seasonSelect = document.getElementById('seasonSelect');
-                const episodeSelect = document.getElementById('episodeSelect');
-                const validSeasons = details.seasons.filter(s => s.season_number > 0);
+                // --- TV SHOW LAYOUT ---
+                let currentSeason = parseInt(season) || 1;
+                let currentEpisode = parseInt(episode) || 1;
+                let currentServer = 'cine1'; // 'cine1' or 'cine2'
+                let totalEpisodes = 10; // default fallback
 
-                validSeasons.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.season_number;
-                    opt.textContent = `Season ${s.season_number}`;
-                    seasonSelect.appendChild(opt);
+                const validSeasons = details.seasons ? details.seasons.filter(s => s.season_number > 0) : [];
+
+                let html = `
+                    <div class="relative min-h-screen bg-[#050507] text-white pb-20">
+                        <div class="fixed inset-0 pointer-events-none -z-10">
+                            ${details.backdrop_path ? `<div class="absolute inset-0 opacity-20 blur-[100px] saturate-150" style="background-image:url(${IMAGE_BASE_ORIGINAL}${details.backdrop_path});background-size:cover;background-position:center"></div>` : ''}
+                            <div class="absolute inset-0 bg-gradient-to-b from-[#050507]/60 via-[#050507] to-[#050507]"></div>
+                        </div>
+
+                        <div class="relative z-10 w-full mx-auto pt-4 sm:pt-6 lg:pt-10 max-w-7xl px-4 sm:px-6">
+                            <!-- Path Breadcrumbs -->
+                            <div class="flex items-center justify-between mb-4 sm:mb-6">
+                                <div class="flex items-center gap-2 text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md">
+                                    <a class="hover:text-white transition-colors" href="#/">Home</a>
+                                    <span class="opacity-40">•</span>
+                                    <a class="hover:text-white transition-colors" href="#/tv-shows">TV Shows</a>
+                                    <span class="opacity-40">•</span>
+                                    <a class="hover:text-white transition-colors" href="#/tv/${details.id}">${title}</a>
+                                    <span class="opacity-40">•</span>
+                                    <span class="text-white" id="tvBreadcrumbEp">S${currentSeason} : E${currentEpisode}</span>
+                                </div>
+                                <a href="#/tv/${id}" class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5 hover:border-white/10 hover:scale-105 active:scale-95">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                </a>
+                            </div>
+
+                            <!-- TV Grid -->
+                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                                <!-- Player Column (Left 75%) -->
+                                <div class="lg:col-span-3 space-y-6">
+                                    <div class="relative w-full aspect-video overflow-hidden bg-black rounded-2xl ring-1 ring-white/10 shadow-2xl shadow-primary/5">
+                                        <iframe id="tvVideoPlayer" src="" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+                                    </div>
+
+                                    <!-- Servers Card -->
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md space-y-3">
+                                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Select Server</span>
+                                        <div class="flex flex-wrap gap-2" id="tvServerContainer">
+                                            <button id="srvCine1" class="px-4 py-2 text-xs font-bold rounded-lg border transition-all">Cine 1</button>
+                                            <button id="srvCine2" class="px-4 py-2 text-xs font-bold rounded-lg border transition-all">Cine 2</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Synopsis Card -->
+                                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-md">
+                                        <h1 class="text-2xl sm:text-3xl font-bold mb-2 text-white">${title}</h1>
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            <span class="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary">TV Show</span>
+                                            ${rating ? `<span class="bg-black/30 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="#FFC300" stroke="#FFC300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${rating}</span>` : ''}
+                                            ${year ? `<span class="bg-black/30 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${year}</span>` : ''}
+                                        </div>
+                                        <p class="text-gray-300 text-sm md:text-base leading-relaxed">${details.overview || 'No synopsis available.'}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Episodes Sidebar (Right 25%) -->
+                                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-md space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-lg font-bold text-white">Episodes</h2>
+                                        <span class="text-xs text-gray-400" id="tvEpCounter">Loading...</span>
+                                    </div>
+
+                                    <!-- Season Selector -->
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block">Season</span>
+                                        <select id="tvSeasonSelect" class="w-full bg-[#050507] border border-white/10 rounded-xl py-2 px-3 text-xs text-white appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer" style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3e%3cpolyline points=\\'6 9 12 15 18 9\\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1em;">
+                                            ${validSeasons.map(s => `<option value="${s.season_number}" ${s.season_number === currentSeason ? 'selected' : ''}>Season ${s.season_number}</option>`).join('')}
+                                        </select>
+                                    </div>
+
+                                    <!-- Episode Search -->
+                                    <div class="relative">
+                                        <input type="text" id="tvEpSearchInput" class="w-full bg-[#050507] border border-white/10 rounded-xl py-2 pl-3 pr-8 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Filter episode..."/>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                                    </div>
+
+                                    <!-- Manual Episode Input -->
+                                    <div class="flex gap-2">
+                                        <input type="number" min="1" id="tvEpManualInput" class="flex-1 bg-[#050507] border border-white/10 rounded-xl py-2 px-3 text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Go to Ep #"/>
+                                        <button id="tvEpManualBtn" class="bg-primary hover:bg-primary-hover text-white font-semibold text-xs px-3 rounded-xl transition-colors">Go</button>
+                                    </div>
+
+                                    <!-- Scrollable Episode Buttons -->
+                                    <div id="tvEpisodeGrid" class="grid grid-cols-4 gap-2 overflow-y-auto max-h-[300px] pr-1">
+                                        <!-- Rendered dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cast & Similar TV Shows below the player -->
+                            ${credits && credits.cast && credits.cast.filter(c => c.profile_path).length > 0 ? `
+                            <section class="mt-12">
+                                <h2 class="mb-4 text-xl font-bold font-display text-white">Cast & Crew</h2>
+                                <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing -mx-1 pl-1">
+                                    ${credits.cast.filter(c => c.profile_path).slice(0, 12).map(actor => `
+                                        <div class="group w-[110px] flex-shrink-0 text-center">
+                                            <div class="mx-auto mb-3 h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-transform duration-300 group-hover:scale-105 group-hover:border-primary/50">
+                                                <img src="${IMAGE_BASE}${actor.profile_path}" alt="${actor.name}" class="h-full w-full object-cover" loading="lazy" />
+                                            </div>
+                                            <p class="truncate text-sm font-semibold text-white group-hover:text-primary transition-colors">${actor.name}</p>
+                                            <p class="mt-1 line-clamp-2 text-xs text-gray-400">${actor.character}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>` : ''}
+
+                            ${similar && similar.results && similar.results.length > 0 ? `
+                            <div class="mt-12">
+                                <h2 class="text-xl sm:text-2xl font-bold mb-6 text-white">Recommendations</h2>
+                                <div class="flex gap-3 overflow-x-auto pb-4 hide-scrollbar -mx-1 pl-1 cursor-grab active:cursor-grabbing">
+                                    ${buildMediaCards(similar.results, 'tv')}
+                                </div>
+                            </div>` : ''}
+
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+
+                const player = document.getElementById('tvVideoPlayer');
+                const breadcrumbEp = document.getElementById('tvBreadcrumbEp');
+                const epCounter = document.getElementById('tvEpCounter');
+                const tvSeasonSelect = document.getElementById('tvSeasonSelect');
+                const tvEpSearchInput = document.getElementById('tvEpSearchInput');
+                const tvEpManualInput = document.getElementById('tvEpManualInput');
+                const tvEpManualBtn = document.getElementById('tvEpManualBtn');
+                const tvEpisodeGrid = document.getElementById('tvEpisodeGrid');
+                const srvCine1 = document.getElementById('srvCine1');
+                const srvCine2 = document.getElementById('srvCine2');
+
+                const updateTVIframe = () => {
+                    if (currentServer === 'cine1') {
+                        player.src = `https://www.vidking.net//embed/tv/${details.id}/${currentSeason}/${currentEpisode}`;
+                    } else {
+                        player.src = `https://hkr4522.github.io/rjtrjrtj/tv/${details.id}/${currentSeason}/${currentEpisode}`;
+                    }
+
+                    breadcrumbEp.textContent = `S${currentSeason} : E${currentEpisode}`;
+
+                    // Update active episode button
+                    document.querySelectorAll('.tv-ep-btn').forEach(btn => {
+                        const epNum = parseInt(btn.dataset.ep);
+                        if (epNum === currentEpisode) {
+                            btn.className = "tv-ep-btn py-2 text-center text-xs font-bold rounded-lg border border-primary bg-primary text-white shadow-md shadow-primary/20 transition-all";
+                        } else {
+                            btn.className = "tv-ep-btn py-2 text-center text-xs font-bold rounded-lg border border-white/5 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white transition-all";
+                        }
+                    });
+                };
+
+                const updateServerButtons = () => {
+                    [srvCine1, srvCine2].forEach(btn => {
+                        btn.className = "px-4 py-2 text-xs font-bold rounded-lg border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all";
+                    });
+                    if (currentServer === 'cine1') {
+                        srvCine1.className = "px-4 py-2 text-xs font-bold rounded-lg border border-primary bg-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all";
+                    } else {
+                        srvCine2.className = "px-4 py-2 text-xs font-bold rounded-lg border border-primary bg-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all";
+                    }
+                };
+
+                const loadEpisodesForSeason = async (seasonNum) => {
+                    tvEpisodeGrid.innerHTML = '<div class="col-span-full flex justify-center py-6"><div class="spinner !w-6 !h-6 !border-2"></div></div>';
+                    const data = await fetchAPI(`/tv/${details.id}/season/${seasonNum}`);
+                    
+                    if (data && data.episodes) {
+                        totalEpisodes = data.episodes.length;
+                        epCounter.textContent = `Total: ${totalEpisodes}`;
+
+                        const drawEpisodesGrid = (filterQuery = '') => {
+                            let buttonsHTML = '';
+                            let renderedCount = 0;
+
+                            data.episodes.forEach(ep => {
+                                const epNumStr = ep.episode_number.toString();
+                                if (filterQuery && !epNumStr.includes(filterQuery) && !ep.name.toLowerCase().includes(filterQuery.toLowerCase())) {
+                                    return;
+                                }
+                                renderedCount++;
+                                buttonsHTML += `
+                                    <button data-ep="${ep.episode_number}" class="tv-ep-btn py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                                        ep.episode_number === currentEpisode
+                                            ? "border-primary bg-primary text-white shadow-md shadow-primary/20"
+                                            : "border-white/5 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                                    }">
+                                        ${ep.episode_number}
+                                    </button>
+                                `;
+                            });
+
+                            if (renderedCount === 0) {
+                                buttonsHTML = '<div class="col-span-full text-center text-gray-500 py-6 text-xs">No matches.</div>';
+                            }
+                            tvEpisodeGrid.innerHTML = buttonsHTML;
+
+                            // Add click handlers
+                            document.querySelectorAll('.tv-ep-btn').forEach(btn => {
+                                btn.addEventListener('click', (e) => {
+                                    const ep = parseInt(e.currentTarget.dataset.ep);
+                                    if (ep) {
+                                        currentEpisode = ep;
+                                        window.location.hash = `#/watch/tv/${details.id}/${currentSeason}/${currentEpisode}`;
+                                        updateTVIframe();
+                                    }
+                                });
+                            });
+                        };
+
+                        // Store filter logic
+                        tvEpSearchInput.oninput = (e) => drawEpisodesGrid(e.target.value.trim());
+
+                        // Draw first time
+                        drawEpisodesGrid();
+                    } else {
+                        tvEpisodeGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-6 text-xs">No episodes.</div>';
+                        epCounter.textContent = 'Total: 0';
+                    }
+                    updateTVIframe();
+                };
+
+                // Server listeners
+                srvCine1.addEventListener('click', () => { currentServer = 'cine1'; updateServerButtons(); updateTVIframe(); });
+                srvCine2.addEventListener('click', () => { currentServer = 'cine2'; updateServerButtons(); updateTVIframe(); });
+
+                // Season listener
+                tvSeasonSelect.addEventListener('change', async (e) => {
+                    currentSeason = parseInt(e.target.value);
+                    currentEpisode = 1;
+                    window.location.hash = `#/watch/tv/${details.id}/${currentSeason}/1`;
+                    await loadEpisodesForSeason(currentSeason);
                 });
 
-                const updateEpisodes = async () => {
-                    const sNum = seasonSelect.value;
-                    episodeSelect.innerHTML = '<option>Loading...</option>';
-                    const sData = await fetchAPI(`/tv/${id}/season/${sNum}`);
-                    episodeSelect.innerHTML = '';
-                    if (sData && sData.episodes) {
-                        sData.episodes.forEach(e => {
-                            const opt = document.createElement('option');
-                            opt.value = e.episode_number;
-                            opt.textContent = `Ep ${e.episode_number}: ${e.name}`;
-                            episodeSelect.appendChild(opt);
-                        });
-                    }
-                    updatePlayerIframe();
-                };
-
-                const updatePlayerIframe = () => {
-                    const sNum = seasonSelect.value;
-                    const eNum = episodeSelect.value;
-                    if (sNum && eNum) {
-                        player.src = `https://hkr4522.github.io/rjtrjrtj/tv/${id}/${sNum}/${eNum}`;
+                // Manual Episode
+                const handleManualEpisode = () => {
+                    const ep = parseInt(tvEpManualInput.value.trim());
+                    if (ep && ep > 0) {
+                        currentEpisode = ep;
+                        if (ep > totalEpisodes) {
+                            totalEpisodes = ep;
+                            epCounter.textContent = `Total: ${totalEpisodes}`;
+                        }
+                        window.location.hash = `#/watch/tv/${details.id}/${currentSeason}/${currentEpisode}`;
+                        loadEpisodesForSeason(currentSeason);
+                        tvEpManualInput.value = '';
                     }
                 };
 
-                seasonSelect.addEventListener('change', updateEpisodes);
-                episodeSelect.addEventListener('change', updatePlayerIframe);
+                tvEpManualBtn.addEventListener('click', handleManualEpisode);
+                tvEpManualInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleManualEpisode();
+                });
 
-                if (validSeasons.length > 0) {
-                    seasonSelect.value = validSeasons[0].season_number;
-                    await updateEpisodes();
-                }
+                // Initial Load
+                updateServerButtons();
+                await loadEpisodesForSeason(currentSeason);
             }
         }
 
         async function renderWatchlist(container) {
             container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
-
             const list = getWatchlist();
             if (list.length === 0) {
                 container.innerHTML = `
@@ -1875,8 +2198,11 @@
                 const id = hash.split('/')[3];
                 if (id) renderPlayer(app, 'movie', id);
             } else if (hash.startsWith('/watch/tv/')) {
-                const id = hash.split('/')[3];
-                if (id) renderPlayer(app, 'tv', id);
+                const parts = hash.split('/');
+                const id = parts[3];
+                const season = parts[4] || '1';
+                const episode = parts[5] || '1';
+                if (id) renderPlayer(app, 'tv', id, season, episode);
             } else if (hash.startsWith('/anime/')) {
                 const id = hash.split('/')[2];
                 if (id) renderAnimeDetails(app, id);
