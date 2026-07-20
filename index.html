@@ -664,6 +664,7 @@
                         <a href="#/${type}/${item.id}" class="w-[146px] md:w-[160px] flex-shrink-0 space-y-3 group block">
                             <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-primary/20">
                                 <img src="${IMAGE_BASE}${item.poster_path}" alt="${title}" class="w-full h-[218px] md:h-[240px] object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                                ${year ? `<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-extrabold text-white border border-white/5 shadow-md select-none">${year}</div>` : ''}
                                 ${getRatingBadge(item.vote_average)}
                             </div>
                             <div>
@@ -691,6 +692,7 @@
                         <a href="#/anime/${item.id}" class="w-[146px] md:w-[160px] flex-shrink-0 space-y-3 group block">
                             <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-primary/20">
                                 <img src="${item.coverImage.large || item.coverImage.extraLarge}" alt="${title}" class="w-full h-[218px] md:h-[240px] object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                                ${year ? `<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-extrabold text-white border border-white/5 shadow-md select-none">${year}</div>` : ''}
                                 ${ratingBadge}
                             </div>
                             <div>
@@ -704,7 +706,6 @@
 
         function buildTop10Cards(items, defaultType) {
             if (!items) return '';
-            // Only take top 10
             return items.slice(0, 10).map((item, index) => {
                 const type = item.media_type || defaultType || 'movie';
                 const title = item.title || item.name;
@@ -714,6 +715,7 @@
                         <a href="#/${type}/${item.id}" class="w-[180px] flex-shrink-0 group block relative">
                             <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-primary/20 aspect-[2/3] ml-8">
                                 <img src="${IMAGE_BASE}${item.poster_path}" alt="${title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                                ${year ? `<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-extrabold text-white border border-white/5 shadow-md select-none">${year}</div>` : ''}
                                 ${getRatingBadge(item.vote_average)}
                             </div>
                             <div class="absolute -left-2 bottom-6 text-[100px] font-black leading-none tracking-tighter" style="
@@ -731,6 +733,7 @@
                         </a>
                     `;
             }).join('');
+        }
         }
 
         function getSkeletonHTML() {
