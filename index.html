@@ -734,7 +734,6 @@
                     `;
             }).join('');
         }
-        }
 
         function getSkeletonHTML() {
             return `
@@ -844,6 +843,34 @@
                         </div>
                     `;
             }
+
+            const providers = [
+                { name: 'Netflix', search: 'Netflix', logoHtml: '<span class="text-[#e50914] font-black text-sm tracking-wider uppercase font-display select-none">NETFLIX</span>' },
+                { name: 'Amazon MGM', search: 'Amazon MGM', logoHtml: '<div class="text-center leading-none select-none"><span class="text-gray-400 font-bold text-[8px] uppercase tracking-widest block leading-none">AMAZON</span><span class="text-white font-medium text-[9px] uppercase tracking-wider block mt-0.5 leading-none">MGM STUDIOS</span></div>' },
+                { name: 'Shudder', search: 'Shudder', logoHtml: '<span class="text-[#ff3b30] font-black text-xs tracking-widest uppercase italic select-none">SHUDDER</span>' },
+                { name: 'Disney+', search: 'Disney+', logoHtml: '<span class="text-[#00e5ff] font-extrabold text-sm tracking-tighter select-none">Disney+</span>' },
+                { name: 'Apple TV', search: 'Apple TV', logoHtml: '<span class="text-white font-bold text-xs tracking-tight flex items-center gap-0.5 select-none"> tv+</span>' },
+                { name: 'Blumhouse', search: 'Blumhouse', logoHtml: '<div class="text-center leading-none select-none"><span class="text-white font-light text-[9px] tracking-widest block">BLUM</span><span class="text-white font-black text-[9px] tracking-wider block mt-0.5">HOUSE</span></div>' },
+                { name: 'Vivamax', search: 'Vivamax', logoHtml: '<span class="font-extrabold text-xs tracking-tight select-none"><span class="text-[#0088cc]">viva</span><span class="text-orange-500">max</span></span>' },
+                { name: 'HBO', search: 'HBO', logoHtml: '<span class="text-white font-black text-lg italic tracking-tighter uppercase select-none">HBO</span>' },
+                { name: 'Marvel Studios', search: 'Marvel Studios', logoHtml: '<div class="bg-red-600 px-1.5 py-0.5 text-[8px] font-black tracking-widest uppercase text-white rounded-sm select-none">MARVEL</div>' },
+                { name: 'A24', search: 'A24', logoHtml: '<span class="text-white font-light text-base tracking-widest uppercase select-none">A24</span>' }
+            ];
+
+            html += `
+                    <section class="space-y-4 mt-8">
+                        <div class="flex items-center justify-between px-1">
+                            <h2 class="text-xl md:text-2xl font-bold">Streaming Providers</h2>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar -mx-1 pl-1">
+                            ${providers.map(p => `
+                                <a href="#/search" onclick="setTimeout(() => { const input = document.getElementById('searchInput'); if (input) { input.value = '${p.search}'; input.dispatchEvent(new Event('input')); } }, 200);" class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-full border border-white/10 bg-white/5 flex items-center justify-center transition-all hover:scale-105 hover:border-primary/50 hover:bg-white/10 shadow-lg hover:shadow-primary/10">
+                                    ${p.logoHtml}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </section>
+                `;
 
             if (topMovies && topMovies.results.length > 0) {
                 html += `
