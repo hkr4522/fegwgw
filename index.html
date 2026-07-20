@@ -110,10 +110,64 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Intro Splash Animations */
+        @keyframes logo-intro {
+            0% {
+                transform: scale(0.85);
+                letter-spacing: 0.1em;
+                opacity: 0;
+                filter: blur(4px);
+            }
+            30% {
+                opacity: 1;
+                filter: blur(0);
+            }
+            100% {
+                transform: scale(1.1);
+                letter-spacing: 0.3em;
+                opacity: 0.95;
+            }
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(139, 92, 246, 0.4), 0 0 20px rgba(139, 92, 246, 0.2);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.4), 0 0 50px rgba(139, 92, 246, 0.2);
+            }
+        }
+
+        @keyframes fade-out-intro {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.03);
+                pointer-events: none;
+            }
+        }
     </style>
 </head>
 
 <body class="font-body min-h-screen bg-black text-white">
+    <!-- Intro Splash Screen -->
+    <div id="introSplash" class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#07080e] select-none">
+        <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at center, rgba(139, 92, 246, 0.12) 0%, transparent 65%);"></div>
+        <div class="text-center relative z-10">
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white uppercase font-display tracking-[0.2em]" style="animation: logo-intro 2.4s cubic-bezier(0.25, 1, 0.5, 1) forwards, glow-pulse 2s infinite ease-in-out;">
+                CINEPEACE
+            </h1>
+        </div>
+        <div class="absolute bottom-6 left-6 flex items-center gap-2 text-[10px] font-semibold text-gray-500 tracking-widest uppercase">
+            <span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+            BUILD 0720-0138
+        </div>
+    </div>
+
     <!-- Desktop Sidebar -->
     <aside
         class="hidden md:flex fixed left-0 top-0 bottom-0 z-50 w-[78px] flex-col items-center bg-transparent py-4 border-r border-white/10">
@@ -2218,7 +2272,18 @@
         }
 
         window.addEventListener('hashchange', router);
-        window.addEventListener('DOMContentLoaded', router);
+        window.addEventListener('DOMContentLoaded', () => {
+            router();
+            setTimeout(() => {
+                const splash = document.getElementById('introSplash');
+                if (splash) {
+                    splash.style.animation = 'fade-out-intro 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+                    setTimeout(() => {
+                        splash.remove();
+                    }, 600);
+                }
+            }, 2300);
+        });
     </script>
 </body>
 
