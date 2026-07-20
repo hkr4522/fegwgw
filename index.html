@@ -348,6 +348,88 @@
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
         const IMAGE_BASE_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 
+        // --- Hero Slider Global State ---
+        let heroIndex = 0;
+        let heroInterval = null;
+        let trendingItems = [];
+
+        function updateHeroSlide(index, items) {
+            const slideContainer = document.getElementById('heroSlideContainer');
+            if (!slideContainer) return;
+            
+            // Smooth fade transition
+            slideContainer.classList.add('opacity-0', 'scale-[1.02]');
+            
+            setTimeout(() => {
+                const item = items[index];
+                if (!item) return;
+                const title = item.title || item.name;
+                const year = new Date(item.release_date || item.first_air_date).getFullYear() || '';
+                const type = item.media_type || (item.name ? 'tv' : 'movie');
+                
+                slideContainer.innerHTML = `
+                    <div class="absolute inset-0">
+                        <img src="${IMAGE_BASE_ORIGINAL}${item.backdrop_path}" alt="${title}" class="w-full h-full object-cover opacity-45 select-none" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#07080e] via-[#07080e]/40 to-transparent md:bg-gradient-to-r md:from-[#07080e] md:via-[#07080e]/30 md:to-transparent"></div>
+                    </div>
+                    <div class="relative flex min-h-[42vh] flex-col justify-end px-6 pb-12 pt-24 text-left md:min-h-[58vh] md:px-12 md:pb-16 md:pt-32">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 w-full max-w-7xl mx-auto gap-8 items-end">
+                            <!-- Left: Info Content -->
+                            <div class="lg:col-span-2 space-y-4">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-gray-200">${year}</span>
+                                    <span class="bg-[#8b5cf6]/20 border border-[#8b5cf6]/30 px-3 py-1 rounded-full text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">${type.toUpperCase()}</span>
+                                    <span class="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-yellow-500 flex items-center gap-1">⭐ ${item.vote_average.toFixed(1)}</span>
+                                </div>
+                                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight font-display drop-shadow-md select-none">${title}</h1>
+                                <p class="text-xs md:text-sm text-gray-300 line-clamp-3 max-w-lg leading-relaxed">${item.overview}</p>
+                                <div class="flex flex-wrap gap-3 pt-2">
+                                    <a href="#/${type}/${item.id}" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-[#7c3aed] text-white text-sm font-bold rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                        Watch Now
+                                    </a>
+                                    <button onclick="toggleWatchlist(${item.id}, '${type}', '${title.replace(/'/g, "\\'")}', '${item.poster_path}', ${item.vote_average}, '${year}')" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-full hover:bg-white/10 transition-all">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                                        + Watchlist
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Thumbnails stack for PC -->
+                            <div class="hidden lg:flex flex-col gap-2.5 bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 shrink-0 select-none ml-auto">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trending Movies</span>
+                                <div class="flex gap-2">
+                                    ${items.slice(0, 5).map((thumb, idx) => {
+                                        const activeClass = idx === index ? 'border-primary ring-2 ring-primary/40 scale-105' : 'border-white/10 opacity-60 hover:opacity-100 hover:scale-102';
+                                        return `
+                                            <div onclick="changeHeroIndex(${idx})" class="w-14 h-20 rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-300 ${activeClass}">
+                                                <img src="${IMAGE_BASE}${thumb.poster_path}" alt="Thumb" class="w-full h-full object-cover"/>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                slideContainer.classList.remove('opacity-0', 'scale-[1.02]');
+            }, 250);
+        }
+
+        window.changeHeroIndex = (idx) => {
+            if (heroInterval) {
+                clearInterval(heroInterval);
+            }
+            heroIndex = idx;
+            updateHeroSlide(heroIndex, trendingItems);
+            
+            heroInterval = setInterval(() => {
+                heroIndex = (heroIndex + 1) % trendingItems.length;
+                updateHeroSlide(heroIndex, trendingItems);
+            }, 6000);
+        };
+
         // --- AniList API Integration (GraphQL) ---
         const ANILIST_API_URL = 'https://graphql.anilist.co';
 
@@ -815,34 +897,17 @@
                 return;
             }
 
-            const heroItem = trendingAll.results[0];
-            const heroType = heroItem.media_type || (heroItem.name ? 'tv' : 'movie');
-            const heroTitle = heroItem.title || heroItem.name;
-            const heroYear = new Date(heroItem.release_date || heroItem.first_air_date).getFullYear() || '';
+            // Extract trending items for the carousel
+            trendingItems = trendingAll.results.filter(item => item.backdrop_path).slice(0, 5);
+            heroIndex = 0;
 
             let html = `<div class="space-y-8">`;
 
-            if (heroItem && heroItem.backdrop_path) {
+            if (trendingItems.length > 0) {
                 html += `
-                        <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b]">
-                            <div class="absolute inset-0">
-                                <img src="${IMAGE_BASE_ORIGINAL}${heroItem.backdrop_path}" alt="${heroTitle}" class="w-full h-full object-cover opacity-50" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                            </div>
-                            <div class="relative flex min-h-[42vh] flex-col justify-end px-4 pb-12 pt-24 text-center md:min-h-[58vh] md:px-8 md:pb-24 md:pt-32">
-                                <div class="mx-auto flex w-full max-w-4xl flex-col items-center px-1">
-                                    <div class="mb-4 flex flex-wrap items-center justify-center gap-2">
-                                        <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold">${heroYear}</span>
-                                        <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold">${heroType.toUpperCase()}</span>
-                                        <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-yellow flex items-center gap-1">⭐ ${heroItem.vote_average.toFixed(1)}</span>
-                                    </div>
-                                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 text-shadow-lg">${heroTitle}</h1>
-                                    <p class="text-sm md:text-base text-gray-300 max-w-2xl line-clamp-3 mb-8 leading-relaxed">${heroItem.overview}</p>
-                                    <a href="#/${heroType}/${heroItem.id}" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-yellow text-black font-bold rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(234,179,8,0.4)]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                        Watch Now
-                                    </a>
-                                </div>
+                        <div id="heroBanner" class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b] min-h-[42vh] md:min-h-[58vh]">
+                            <div id="heroSlideContainer" class="absolute inset-0 transition-all duration-300">
+                                <!-- Loaded dynamically via updateHeroSlide -->
                             </div>
                         </div>
                     `;
@@ -1086,6 +1151,15 @@
 
             html += `</div>`;
             container.innerHTML = html;
+
+            // Initialize hero slide and auto play
+            if (trendingItems.length > 0) {
+                updateHeroSlide(heroIndex, trendingItems);
+                heroInterval = setInterval(() => {
+                    heroIndex = (heroIndex + 1) % trendingItems.length;
+                    updateHeroSlide(heroIndex, trendingItems);
+                }, 6000);
+            }
         }
 
         async function renderSearch(container) {
@@ -2371,6 +2445,10 @@ window.updateWatchLink = (id) => {
 
         // --- Router ---
         function router() {
+            if (heroInterval) {
+                clearInterval(heroInterval);
+                heroInterval = null;
+            }
             const hash = window.location.hash.slice(1) || '/';
             const app = document.getElementById('app');
 
