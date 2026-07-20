@@ -168,9 +168,13 @@
         </div>
     </div>
 
+    <!-- Ambient background gradient spots -->
+    <div class="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#8b5cf6]/5 blur-[120px] pointer-events-none z-[-1] select-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#6366f1]/5 blur-[130px] pointer-events-none z-[-1] select-none"></div>
+
     <!-- Desktop Sidebar -->
     <aside
-        class="hidden md:flex fixed left-0 top-0 bottom-0 z-50 w-[78px] flex-col items-center bg-transparent py-4 border-r border-white/10">
+        class="hidden md:flex fixed left-0 top-0 bottom-0 z-50 w-[78px] flex-col items-center bg-black/40 backdrop-blur-xl py-4 border-r border-white/5 shadow-2xl">
         <div class="mb-auto pt-2">
             <a class="flex items-center" href="#/">
                 <div class="text-primary font-bold text-xl">CINEPEACE</div>
@@ -247,7 +251,7 @@
 
     <!-- Mobile Bottom Nav -->
     <nav
-        class="md:hidden fixed bottom-2 left-3 right-3 z-50 flex items-center rounded-2xl border border-white/10 bg-black/75 px-1 py-1.5 backdrop-blur-xl">
+        class="md:hidden fixed bottom-2 left-3 right-3 z-50 flex items-center rounded-2xl border border-white/5 bg-black/40 px-1 py-1.5 backdrop-blur-xl shadow-2xl shadow-primary/10">
         <a class="nav-link-mobile flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-2 transition-all text-gray-500 hover:bg-white/10 hover:text-white"
             href="#/" data-nav="home">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -1261,7 +1265,7 @@
             updateWatchLink(tvId);
         };
 
-        window.updateWatchLink = (id) => {
+window.updateWatchLink = (id) => {
             const watchBtn = document.getElementById('watchNowBtn');
             if (!watchBtn) return;
             const s = document.getElementById('seasonSelectDetails')?.value || 1;
@@ -1287,71 +1291,133 @@
             const title = details.title || details.name;
             const year = new Date(details.release_date || details.first_air_date).getFullYear() || '';
             const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]) ? `${details.runtime || details.episode_run_time[0]} min` : '';
+            const rating = details.vote_average ? details.vote_average.toFixed(1) : '';
+            const releaseDate = details.release_date || details.first_air_date || 'Unknown';
+            const director = credits && credits.crew ? credits.crew.find(c => c.job === 'Director')?.name : '';
+            const castText = credits && credits.cast ? credits.cast.slice(0, 5).map(c => c.name).join(', ') : '';
+            const production = details.production_companies && details.production_companies.length > 0 ? details.production_companies[0].name : '';
 
             container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
 
             let html = `
-                    <div class="relative flex w-full flex-col justify-end overflow-hidden min-h-[550px] h-[70vh] md:h-[85vh] md:min-h-[640px]">
-                        <div class="absolute inset-0" style="mask-image:linear-gradient(to bottom, black 50%, transparent 100%);-webkit-mask-image:linear-gradient(to bottom, black 50%, transparent 100%)">
-                            ${details.backdrop_path ? `<img src="${IMAGE_BASE_ORIGINAL}${details.backdrop_path}" alt="${title}" class="absolute inset-0 w-full h-full object-cover object-top md:object-center"/>` : ''}
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/30 md:to-black/40"></div>
-                        </div>
-                        
-                        <div class="relative z-10 flex flex-col px-4 pb-12 md:px-6 md:pb-16 justify-end items-center text-center h-full mt-auto">
-                            <div class="absolute top-5 left-4 right-4 md:left-6 md:right-6 flex items-center justify-between gap-3">
-                                <a href="#/" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur text-white transition hover:bg-white/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                                </a>
-                            </div>
-                            <div class="max-w-3xl flex flex-col items-center">
-                                <h1 class="mb-4 text-4xl font-bold font-display md:text-6xl text-shadow-lg">${title}</h1>
-                                <div class="mb-4 flex flex-wrap justify-center gap-2">
-                                    <span class="rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-yellow">${type === 'movie' ? 'Movie' : 'TV Show'}</span>
-                                    <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="#FFC300" stroke="#FFC300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${details.vote_average.toFixed(1)}</span>
-                                    ${year ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${year}</span>` : ''}
-                                    ${runtime ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${runtime}</span>` : ''}
+                <div class="relative min-h-screen bg-[#07080e] text-white pb-20">
+                    <!-- Backdrop Banner -->
+                    <div class="relative w-full h-[35vh] md:h-[50vh] overflow-hidden">
+                        ${details.backdrop_path ? `<img src="${IMAGE_BASE_ORIGINAL}${details.backdrop_path}" alt="${title}" class="w-full h-full object-cover object-top opacity-30 select-none"/>` : ''}
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#07080e] via-[#07080e]/40 to-transparent"></div>
+                    </div>
+
+                    <!-- Details Box Section (Negative margin overlays the banner) -->
+                    <div class="relative z-10 -mt-24 md:-mt-48 max-w-7xl mx-auto px-4 sm:px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+                            
+                            <!-- Left Column: Poster Image -->
+                            <div class="col-span-1 flex flex-col items-center md:items-start gap-4">
+                                <div class="w-[240px] md:w-full aspect-[2/3] rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl shadow-primary/20 transition-transform duration-300 hover:scale-[1.02]">
+                                    <img src="${IMAGE_BASE}${details.poster_path}" alt="${title}" class="w-full h-full object-cover"/>
                                 </div>
-                                <div>
-                                    <p class="text-gray-300 text-sm md:text-base leading-relaxed max-w-2xl">${details.overview}</p>
+                            </div>
+
+                            <!-- Right Column: Metadata info -->
+                            <div class="col-span-1 md:col-span-3 space-y-6 text-left">
+                                <!-- Path Breadcrumbs -->
+                                <div class="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md w-fit">
+                                    <a class="hover:text-white transition-colors" href="#/">Home</a>
+                                    <span class="opacity-40">•</span>
+                                    <span class="hover:text-white transition-colors">${type === 'movie' ? 'Movies' : 'TV Shows'}</span>
+                                    <span class="opacity-40">•</span>
+                                    <span class="text-white truncate max-w-[120px] sm:max-w-xs">${title}</span>
                                 </div>
 
+                                <div class="space-y-3">
+                                    <h1 class="text-3xl md:text-5xl font-extrabold font-display leading-tight tracking-tight text-white">${title}</h1>
+                                    
+                                    <!-- Badges Row -->
+                                    <div class="flex flex-wrap items-center gap-3 text-xs">
+                                        <span class="bg-[#8b5cf6]/20 border border-[#8b5cf6]/30 px-3 py-1 rounded-full text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">${type === 'movie' ? 'Movie' : 'TV Show'}</span>
+                                        ${rating ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold text-yellow-500"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-yellow-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${rating}</span>` : ''}
+                                        ${year ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs text-gray-300 font-medium">${year}</span>` : ''}
+                                        ${runtime ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs text-gray-300 font-medium">${runtime}</span>` : ''}
+                                        <span class="bg-gradient-to-r from-primary to-secondary px-2 py-0.5 rounded text-[10px] font-black text-white tracking-widest shadow-sm">HD</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <a id="watchNowBtn" href="#/watch/${type}/${id}${type === 'tv' ? '/1/1' : ''}" class="flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white rounded-full transition-transform hover:scale-105 shadow-[0_0_25px_rgba(139,92,246,0.5)]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                                        Watch Now
+                                    </a>
+                                    <button onclick="toggleWatchlist(${id}, '${type}', '${title.replace(/'/g, "\\'")}', '${details.poster_path}', ${details.vote_average}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold bg-white/5 text-white border border-white/10 rounded-full transition-all hover:bg-white/10">
+                                        ${isInWatchlist(id) ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> In Watchlist' : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> + Watchlist'}
+                                    </button>
+                                </div>
+
+                                <!-- TV Seasons Dropdowns -->
                                 ${type === 'tv' && details.seasons ? `
-                                <div class="mt-6 flex flex-wrap justify-center items-center gap-3">
-                                    <select id="seasonSelectDetails" class="bg-black/60 border border-white/20 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow" onchange="updateEpisodeSelectDetails(this.value, ${details.id})">
+                                <div class="flex flex-wrap items-center gap-3 bg-white/5 border border-white/5 rounded-2xl p-4 w-fit">
+                                    <span class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Select Episode</span>
+                                    <select id="seasonSelectDetails" class="bg-black/60 border border-white/20 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-primary cursor-pointer" onchange="updateEpisodeSelectDetails(this.value, ${details.id})">
                                         ${details.seasons.filter(s => s.season_number > 0).map(s => `<option value="${s.season_number}">Season ${s.season_number}</option>`).join('')}
                                     </select>
-                                    <select id="episodeSelectDetails" class="bg-black/60 border border-white/20 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow" onchange="updateWatchLink(${details.id})">
+                                    <select id="episodeSelectDetails" class="bg-black/60 border border-white/20 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-primary cursor-pointer" onchange="updateWatchLink(${details.id})">
                                         <option value="1">Episode 1</option>
                                     </select>
                                 </div>
                                 ` : ''}
 
-                                <div class="mt-8 flex flex-wrap justify-center w-full border-b border-transparent gap-4">
-                                     <a id="watchNowBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-primary text-white rounded-full transition-transform hover:scale-105 md:w-auto shadow-[0_0_20px_rgba(139,92,246,0.5)]" href="#/watch/${type}/${id}${type === 'tv' ? '/1/1' : ''}">
-                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch Now
-                                     </a>
-                                     <button onclick="toggleWatchlist(${id}, '${type}', '${title.replace(/'/g, "\\'")}', '${details.poster_path}', ${details.vote_average}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-white/10 text-white border border-white/20 rounded-full transition-all hover:bg-white/20 md:w-auto backdrop-blur-md">
-                                        ${isInWatchlist(id) ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> In Watchlist' : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> + Watchlist'}
-                                    </button>
+                                <!-- Storyline -->
+                                <div class="space-y-2">
+                                    <h2 class="text-lg font-bold text-white tracking-wide border-b border-white/5 pb-2">Storyline</h2>
+                                    <p class="text-gray-300 text-sm md:text-base leading-relaxed leading-normal">${details.overview || 'No storyline available.'}</p>
                                 </div>
-                                ${details.genres ? `
-                                <div class="mt-6 flex flex-wrap justify-center gap-2">
-                                    ${details.genres.map(g => `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-sm text-gray-300">${g.name}</span>`).join('')}
-                                </div>` : ''}
+
+                                <!-- Information Grid -->
+                                <div class="bg-white/5 border border-white/5 rounded-2xl p-5 space-y-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Specifications</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Released Date</span>
+                                            <span class="text-gray-200 font-medium">${releaseDate}</span>
+                                        </div>
+                                        ${details.genres ? `
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Genres</span>
+                                            <span class="text-gray-200 font-medium">${details.genres.map(g => g.name).join(', ')}</span>
+                                        </div>` : ''}
+                                        ${director ? `
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Director</span>
+                                            <span class="text-gray-200 font-medium">${director}</span>
+                                        </div>` : ''}
+                                        ${production ? `
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Production</span>
+                                            <span class="text-gray-200 font-medium">${production}</span>
+                                        </div>` : ''}
+                                        ${castText ? `
+                                        <div class="space-y-1 sm:col-span-2">
+                                            <span class="text-xs text-gray-500 block">Top Cast</span>
+                                            <span class="text-gray-200 font-medium line-clamp-1">${castText}</span>
+                                        </div>` : ''}
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Trailer Section -->
                     ${videos && videos.results && videos.results.length > 0 && videos.results.filter(v => v.site === 'YouTube').length > 0 ? `
-                    <section class="mt-8 px-4 md:px-6">
-                        <h2 class="mb-4 text-xl font-bold font-display">Trailers & Videos</h2>
+                    <section class="max-w-7xl mx-auto mt-12 px-4 sm:px-6">
+                        <h2 class="mb-4 text-xl font-bold font-display text-white">Trailers & Clip videos</h2>
                         <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing -mx-1 pl-1">
                             ${videos.results.filter(v => v.site === 'YouTube').slice(0, 5).map(vid => `
                                 <a href="https://www.youtube.com/watch?v=${vid.key}" target="_blank" class="group block min-w-[280px] overflow-hidden rounded-3xl border border-white/10 bg-white/5">
                                     <div class="relative h-[160px] bg-[#141414]">
                                         <img src="https://img.youtube.com/vi/${vid.key}/hqdefault.jpg" alt="${vid.name}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
                                         <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-yellow text-black shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></div>
+                                            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></div>
                                         </div>
                                     </div>
                                     <div class="p-4">
@@ -1363,31 +1429,33 @@
                         </div>
                     </section>` : ''}
 
+                    <!-- Cast & Crew -->
                     ${credits && credits.cast && credits.cast.filter(c => c.profile_path).length > 0 ? `
-                    <section class="mt-8 px-4 md:px-6">
-                        <h2 class="mb-4 text-xl font-bold font-display">Cast & Crew</h2>
+                    <section class="max-w-7xl mx-auto mt-12 px-4 sm:px-6">
+                        <h2 class="mb-4 text-xl font-bold font-display text-white">Cast & Crew</h2>
                         <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing -mx-1 pl-1">
                             ${credits.cast.filter(c => c.profile_path).slice(0, 15).map(actor => `
                                 <div class="group w-[110px] flex-shrink-0 text-center">
-                                    <div class="mx-auto mb-3 h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-transform duration-300 group-hover:scale-105 group-hover:border-yellow/50">
+                                    <div class="mx-auto mb-3 h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-transform duration-300 group-hover:scale-105 group-hover:border-primary/50">
                                         <img src="${IMAGE_BASE}${actor.profile_path}" alt="${actor.name}" class="h-full w-full object-cover" loading="lazy" />
                                     </div>
-                                    <p class="truncate text-sm font-semibold text-white group-hover:text-yellow transition-colors">${actor.name}</p>
+                                    <p class="truncate text-sm font-semibold text-white group-hover:text-primary transition-colors">${actor.name}</p>
                                     <p class="mt-1 line-clamp-2 text-xs text-gray-400">${actor.character}</p>
                                 </div>
                             `).join('')}
                         </div>
                     </section>` : ''}
 
+                    <!-- Recommendations -->
                     ${similar && similar.results && similar.results.length > 0 ? `
-                    <section class="mt-8 px-4 md:px-6 pb-20">
-                        <h2 class="mb-4 text-xl font-bold font-display">More Like This</h2>
+                    <section class="max-w-7xl mx-auto mt-12 px-4 sm:px-6 pb-20">
+                        <h2 class="mb-4 text-xl font-bold font-display text-white">More Like This</h2>
                         <div class="flex gap-3 overflow-x-auto pb-4 hide-scrollbar -mx-1 pl-1 cursor-grab active:cursor-grabbing">
                             ${buildMediaCards(similar.results, type)}
                         </div>
                     </section>` : ''}
-
-                `;
+                </div>
+            `;
             container.innerHTML = html;
 
             if (type === 'tv' && details.seasons) {
@@ -1417,55 +1485,103 @@
             container.classList.remove('pt-32', 'md:pt-20', 'px-4', 'md:px-6');
 
             let html = `
-                    <div class="relative flex w-full flex-col justify-end overflow-hidden min-h-[550px] h-[70vh] md:h-[85vh] md:min-h-[640px]">
-                        <div class="absolute inset-0" style="mask-image:linear-gradient(to bottom, black 50%, transparent 100%);-webkit-mask-image:linear-gradient(to bottom, black 50%, transparent 100%)">
-                            ${media.bannerImage ? `<img src="${media.bannerImage}" alt="${title}" class="absolute inset-0 w-full h-full object-cover object-center"/>` : (media.coverImage.extraLarge ? `<img src="${media.coverImage.extraLarge}" alt="${title}" class="absolute inset-0 w-full h-full object-cover blur-md scale-105 opacity-40"/>` : '')}
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#07080e] via-[#07080e]/40 to-transparent md:bg-gradient-to-r md:from-[#07080e] md:via-[#07080e]/30 md:to-[#07080e]/40"></div>
-                        </div>
-                        
-                        <div class="relative z-10 flex flex-col px-4 pb-12 md:px-6 md:pb-16 justify-end items-center text-center h-full mt-auto">
-                            <div class="absolute top-5 left-4 right-4 md:left-6 md:right-6 flex items-center justify-between gap-3">
-                                <a href="#/" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur text-white transition hover:bg-white/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                                </a>
-                            </div>
-                            <div class="max-w-3xl flex flex-col items-center">
-                                <h1 class="mb-4 text-4xl font-bold font-display md:text-6xl text-shadow-lg text-white">${title}</h1>
-                                <div class="mb-4 flex flex-wrap justify-center gap-2">
-                                    <span class="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">${media.format || 'Anime'}</span>
-                                    ${rating ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="#FFC300" stroke="#FFC300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${rating}</span>` : ''}
-                                    ${year ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${year}</span>` : ''}
-                                    <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs">${totalEpisodes} ${totalEpisodes === 1 || totalEpisodes === 'Ongoing' ? 'Episode' : 'Episodes'}</span>
-                                    <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs uppercase tracking-wider text-gray-300">${media.status}</span>
+                <div class="relative min-h-screen bg-[#07080e] text-white pb-20">
+                    <!-- Backdrop Banner -->
+                    <div class="relative w-full h-[35vh] md:h-[50vh] overflow-hidden">
+                        ${media.bannerImage ? `<img src="${media.bannerImage}" alt="${title}" class="w-full h-full object-cover object-center opacity-30 select-none"/>` : (media.coverImage.extraLarge ? `<img src="${media.coverImage.extraLarge}" alt="${title}" class="w-full h-full object-cover blur-md scale-105 opacity-25 select-none"/>` : '')}
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#07080e] via-[#07080e]/40 to-transparent"></div>
+                    </div>
+
+                    <!-- Details Box Section -->
+                    <div class="relative z-10 -mt-24 md:-mt-48 max-w-7xl mx-auto px-4 sm:px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+                            
+                            <!-- Left Column: Poster Image -->
+                            <div class="col-span-1 flex flex-col items-center md:items-start gap-4">
+                                <div class="w-[240px] md:w-full aspect-[2/3] rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl shadow-primary/20 transition-transform duration-300 hover:scale-[1.02]">
+                                    <img src="${posterPath}" alt="${title}" class="w-full h-full object-cover"/>
                                 </div>
-                                <div class="mb-6 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar-thin text-left">
-                                    <p class="text-gray-300 text-sm md:text-base leading-relaxed text-center">${media.description || 'No description available.'}</p>
+                            </div>
+
+                            <!-- Right Column: Metadata info -->
+                            <div class="col-span-1 md:col-span-3 space-y-6 text-left">
+                                <!-- Path Breadcrumbs -->
+                                <div class="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-md w-fit">
+                                    <a class="hover:text-white transition-colors" href="#/">Home</a>
+                                    <span class="opacity-40">•</span>
+                                    <span class="hover:text-white transition-colors">Anime</span>
+                                    <span class="opacity-40">•</span>
+                                    <span class="text-white truncate max-w-[120px] sm:max-w-xs">${title}</span>
                                 </div>
 
-                                <div class="mt-4 flex flex-wrap justify-center w-full border-b border-transparent gap-4">
-                                    <a class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-primary text-white rounded-full transition-transform hover:scale-105 md:w-auto shadow-[0_0_20px_rgba(139,92,246,0.5)]" href="#/watch/anime/${id}/1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch Now
+                                <div class="space-y-3">
+                                    <h1 class="text-3xl md:text-5xl font-extrabold font-display leading-tight tracking-tight text-white">${title}</h1>
+                                    
+                                    <!-- Badges Row -->
+                                    <div class="flex flex-wrap items-center gap-3 text-xs">
+                                        <span class="bg-[#8b5cf6]/20 border border-[#8b5cf6]/30 px-3 py-1 rounded-full text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">${media.format || 'Anime'}</span>
+                                        ${rating ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold text-yellow-500"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-yellow-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${rating}</span>` : ''}
+                                        ${year ? `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs text-gray-300 font-medium">${year}</span>` : ''}
+                                        <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs text-gray-300 font-medium">${totalEpisodes} ${totalEpisodes === 1 || totalEpisodes === 'Ongoing' ? 'Episode' : 'Episodes'}</span>
+                                        <span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-xs text-[#a78bfa] font-semibold uppercase tracking-wider">${media.status}</span>
+                                        <span class="bg-gradient-to-r from-primary to-secondary px-2 py-0.5 rounded text-[10px] font-black text-white tracking-widest shadow-sm">HD</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <a class="flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white rounded-full transition-transform hover:scale-105 shadow-[0_0_25px_rgba(139,92,246,0.5)]" href="#/watch/anime/${id}/1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                                        Watch Now
                                     </a>
-                                    <button onclick="toggleWatchlist(${media.id}, 'anime', '${title.replace(/'/g, "\\'")}', '${posterPath}', ${media.averageScore ? media.averageScore/10 : 0}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 w-full max-w-xs px-8 py-3.5 text-base font-bold bg-white/10 text-white border border-white/20 rounded-full transition-all hover:bg-white/20 md:w-auto backdrop-blur-md">
-                                        ${isInWatchlist(media.id) ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> In Watchlist' : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> + Watchlist'}
+                                    <button onclick="toggleWatchlist(${media.id}, 'anime', '${title.replace(/'/g, "\\'")}', '${posterPath}', ${media.averageScore ? media.averageScore/10 : 0}, '${year}')" id="watchlistBtn" class="flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold bg-white/5 text-white border border-white/10 rounded-full transition-all hover:bg-white/10">
+                                        ${isInWatchlist(media.id) ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> In Watchlist' : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg> + Watchlist'}
                                     </button>
                                 </div>
-                                ${media.genres ? `
-                                <div class="mt-6 flex flex-wrap justify-center gap-2">
-                                    ${media.genres.map(g => `<span class="bg-black/40 border border-white/5 backdrop-blur-md px-3 py-1 rounded-full text-sm text-gray-300">${g}</span>`).join('')}
-                                </div>` : ''}
+
+                                <!-- Storyline -->
+                                <div class="space-y-2">
+                                    <h2 class="text-lg font-bold text-white tracking-wide border-b border-white/5 pb-2">Storyline</h2>
+                                    <p class="text-gray-300 text-sm md:text-base leading-relaxed leading-normal">${media.description || 'No storyline available.'}</p>
+                                </div>
+
+                                <!-- Information Grid -->
+                                <div class="bg-white/5 border border-white/5 rounded-2xl p-5 space-y-4">
+                                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Specifications</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Season Year</span>
+                                            <span class="text-gray-200 font-medium">${year}</span>
+                                        </div>
+                                        ${media.genres ? `
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Genres</span>
+                                            <span class="text-gray-200 font-medium">${media.genres.join(', ')}</span>
+                                        </div>` : ''}
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Status</span>
+                                            <span class="text-gray-200 font-medium uppercase tracking-wider">${media.status}</span>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <span class="text-xs text-gray-500 block">Source</span>
+                                            <span class="text-gray-200 font-medium uppercase">${media.source || 'Original'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
 
+                    <!-- Characters / Cast -->
                     ${media.characters && media.characters.edges && media.characters.edges.length > 0 ? `
-                    <section class="mt-8 px-4 md:px-6">
+                    <section class="max-w-7xl mx-auto mt-12 px-4 sm:px-6">
                         <h2 class="mb-4 text-xl font-bold font-display text-white">Characters & Cast</h2>
                         <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing -mx-1 pl-1">
-                            ${media.characters.edges.map(c => `
+                            ${media.characters.edges.filter(c => c.node && c.node.image).slice(0, 15).map(c => `
                                 <div class="group w-[110px] flex-shrink-0 text-center">
                                     <div class="mx-auto mb-3 h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-transform duration-300 group-hover:scale-105 group-hover:border-primary/50">
-                                        <img src="${c.node.image.large}" alt="${c.node.name.full}" class="h-full w-full object-cover" loading="lazy" />
+                                        <img src="${c.node.image.large || c.node.image.medium}" alt="${c.node.name.full}" class="h-full w-full object-cover" loading="lazy" />
                                     </div>
                                     <p class="truncate text-sm font-semibold text-white group-hover:text-primary transition-colors">${c.node.name.full}</p>
                                     <p class="mt-1 line-clamp-2 text-xs text-gray-400">${c.role}</p>
@@ -1474,14 +1590,17 @@
                         </div>
                     </section>` : ''}
 
+                    <!-- Recommendations -->
                     ${media.recommendations && media.recommendations.nodes && media.recommendations.nodes.length > 0 ? `
-                    <section class="mt-8 px-4 md:px-6 pb-20">
+                    <section class="max-w-7xl mx-auto mt-12 px-4 sm:px-6 pb-20">
                         <h2 class="mb-4 text-xl font-bold font-display text-white">More Like This</h2>
                         <div class="flex gap-3 overflow-x-auto pb-4 hide-scrollbar -mx-1 pl-1 cursor-grab active:cursor-grabbing">
                             ${buildAniListCards(media.recommendations.nodes.filter(n => n.mediaRecommendation).map(n => n.mediaRecommendation))}
                         </div>
                     </section>` : ''}
-                `;
+
+                </div>
+            `;
             container.innerHTML = html;
         }
 
