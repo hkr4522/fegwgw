@@ -430,6 +430,90 @@
             }, 6000);
         };
 
+        // --- Anime Hero Slider Global State ---
+        let animeHeroIndex = 0;
+        let animeHeroInterval = null;
+        let animeTrendingItems = [];
+
+        function updateAnimeHeroSlide(index, items) {
+            const slideContainer = document.getElementById('animeHeroSlideContainer');
+            if (!slideContainer) return;
+            
+            // Smooth fade transition
+            slideContainer.classList.add('opacity-0', 'scale-[1.02]');
+            
+            setTimeout(() => {
+                const item = items[index];
+                if (!item) return;
+                const title = item.title.userPreferred || item.title.english || item.title.romaji;
+                const year = item.seasonYear || '';
+                const format = item.format || 'Anime';
+                const rating = item.averageScore ? (item.averageScore / 10).toFixed(1) : '';
+                const banner = item.bannerImage || (item.coverImage.extraLarge || item.coverImage.large);
+                
+                slideContainer.innerHTML = `
+                    <div class="absolute inset-0">
+                        <img src="${banner}" alt="${title}" class="w-full h-full object-cover opacity-45 select-none" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#07080e] via-[#07080e]/40 to-transparent md:bg-gradient-to-r md:from-[#07080e] md:via-[#07080e]/30 md:to-transparent"></div>
+                    </div>
+                    <div class="relative flex min-h-[42vh] flex-col justify-end px-6 pb-12 pt-24 text-left md:min-h-[58vh] md:px-12 md:pb-16 md:pt-32">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 w-full max-w-7xl mx-auto gap-8 items-end">
+                            <!-- Left: Info Content -->
+                            <div class="lg:col-span-2 space-y-4">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    ${year ? `<span class="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-gray-200">${year}</span>` : ''}
+                                    <span class="bg-[#8b5cf6]/20 border border-[#8b5cf6]/30 px-3 py-1 rounded-full text-xs font-semibold text-[#a78bfa] tracking-wider uppercase">${format}</span>
+                                    ${rating ? `<span class="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-yellow-500 flex items-center gap-1">⭐ ${rating}</span>` : ''}
+                                </div>
+                                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight font-display drop-shadow-md select-none">${title}</h1>
+                                <p class="text-xs md:text-sm text-gray-300 line-clamp-3 max-w-lg leading-relaxed">${item.description || 'No overview available.'}</p>
+                                <div class="flex flex-wrap gap-3 pt-2">
+                                    <a href="#/watch/anime/${item.id}/1" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary to-[#7c3aed] text-white text-sm font-bold rounded-full hover:scale-105 transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                        Watch Now
+                                    </a>
+                                    <button onclick="toggleWatchlist(${item.id}, 'anime', '${title.replace(/'/g, "\\'")}', '${item.coverImage.large}', ${item.averageScore ? item.averageScore/10 : 0}, '${year}')" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-bold rounded-full hover:bg-white/10 transition-all">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                                        + Watchlist
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Thumbnails stack for PC -->
+                            <div class="hidden lg:flex flex-col gap-2.5 bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl p-4 shrink-0 select-none ml-auto">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Trending Anime</span>
+                                <div class="flex gap-2">
+                                    ${items.slice(0, 5).map((thumb, idx) => {
+                                        const activeClass = idx === index ? 'border-primary ring-2 ring-primary/40 scale-105' : 'border-white/10 opacity-60 hover:opacity-100 hover:scale-102';
+                                        return `
+                                            <div onclick="changeAnimeHeroIndex(${idx})" class="w-14 h-20 rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-300 ${activeClass}">
+                                                <img src="${thumb.coverImage.large}" alt="Thumb" class="w-full h-full object-cover"/>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                slideContainer.classList.remove('opacity-0', 'scale-[1.02]');
+            }, 250);
+        }
+
+        window.changeAnimeHeroIndex = (idx) => {
+            if (animeHeroInterval) {
+                clearInterval(animeHeroInterval);
+            }
+            animeHeroIndex = idx;
+            updateAnimeHeroSlide(animeHeroIndex, animeTrendingItems);
+            
+            animeHeroInterval = setInterval(() => {
+                animeHeroIndex = (animeHeroIndex + 1) % animeTrendingItems.length;
+                updateAnimeHeroSlide(animeHeroIndex, animeTrendingItems);
+            }, 6000);
+        };
+
         // --- AniList API Integration (GraphQL) ---
         const ANILIST_API_URL = 'https://graphql.anilist.co';
 
@@ -1268,20 +1352,77 @@
             container.innerHTML = '<div class="flex justify-center py-32"><div class="spinner"></div></div>';
 
             if (type === 'anime') {
-                const data = await fetchAniList(ANILIST_POPULAR_QUERY, { page: 1, perPage: 30 });
-                if (!data || !data.Page || !data.Page.media) {
-                    container.innerHTML = '<div class="text-center py-20">Failed to load data.</div>';
+                const [trending, popular, topRated] = await Promise.all([
+                    fetchAniList(ANILIST_TRENDING_QUERY, { page: 1, perPage: 15 }),
+                    fetchAniList(ANILIST_POPULAR_QUERY, { page: 1, perPage: 15 }),
+                    fetchAniList(ANILIST_TOP_RATED_QUERY, { page: 1, perPage: 15 })
+                ]);
+
+                if (!trending || !trending.Page || !trending.Page.media) {
+                    container.innerHTML = '<div class="text-center py-20">Failed to load Anime catalog.</div>';
                     return;
                 }
-                const cardsHtml = buildAniListCards(data.Page.media);
-                container.innerHTML = `
-                        <div class="max-w-7xl mx-auto mt-4 md:mt-8">
-                            <h2 class="text-2xl md:text-3xl font-bold mb-8">Popular Anime</h2>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                                ${cardsHtml}
+
+                // Store trending items globally for the anime hero carousel
+                animeTrendingItems = trending.Page.media;
+                animeHeroIndex = 0;
+
+                let html = `
+                    <div class="space-y-8">
+                        <!-- Anime Hero Slider -->
+                        <div id="heroBanner" class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b0b] min-h-[42vh] md:min-h-[58vh]">
+                            <div id="animeHeroSlideContainer" class="absolute inset-0 transition-all duration-300">
+                                <!-- Loaded dynamically via updateAnimeHeroSlide -->
                             </div>
                         </div>
-                    `;
+
+                        <!-- Trending Anime Row -->
+                        <section class="space-y-4 mt-8">
+                            <div class="flex items-center justify-between px-1">
+                                <h2 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-white via-white to-primary/80 bg-clip-text text-transparent" style="background: linear-gradient(to right, #ffffff, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Trending Anime</h2>
+                            </div>
+                            <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                                ${buildAniListCards(trending.Page.media)}
+                            </div>
+                        </section>
+
+                        <!-- All-Time Popular Anime Row -->
+                        ${popular && popular.Page && popular.Page.media && popular.Page.media.length > 0 ? `
+                        <section class="space-y-4 mt-8">
+                            <div class="flex items-center justify-between px-1">
+                                <h2 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-white via-white to-primary/80 bg-clip-text text-transparent" style="background: linear-gradient(to right, #ffffff, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">All-Time Popular</h2>
+                            </div>
+                            <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                                ${buildAniListCards(popular.Page.media)}
+                            </div>
+                        </section>
+                        ` : ''}
+
+                        <!-- Highest Rated Anime Row -->
+                        ${topRated && topRated.Page && topRated.Page.media && topRated.Page.media.length > 0 ? `
+                        <section class="space-y-4 mt-8">
+                            <div class="flex items-center justify-between px-1">
+                                <h2 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-white via-white to-primary/80 bg-clip-text text-transparent" style="background: linear-gradient(to right, #ffffff, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Highest Rated</h2>
+                            </div>
+                            <div class="flex gap-3 overflow-x-auto px-1 md:gap-4 pb-4 hide-scrollbar -mx-1 pl-1">
+                                ${buildAniListCards(topRated.Page.media)}
+                            </div>
+                        </section>
+                        ` : ''}
+
+                    </div>
+                `;
+
+                container.innerHTML = html;
+
+                // Start autoplay and set initial slide
+                if (animeTrendingItems.length > 0) {
+                    updateAnimeHeroSlide(animeHeroIndex, animeTrendingItems);
+                    animeHeroInterval = setInterval(() => {
+                        animeHeroIndex = (animeHeroIndex + 1) % animeTrendingItems.length;
+                        updateAnimeHeroSlide(animeHeroIndex, animeTrendingItems);
+                    }, 6000);
+                }
                 return;
             }
 
@@ -2448,6 +2589,10 @@ window.updateWatchLink = (id) => {
             if (heroInterval) {
                 clearInterval(heroInterval);
                 heroInterval = null;
+            }
+            if (animeHeroInterval) {
+                clearInterval(animeHeroInterval);
+                animeHeroInterval = null;
             }
             const hash = window.location.hash.slice(1) || '/';
             const app = document.getElementById('app');
